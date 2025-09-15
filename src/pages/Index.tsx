@@ -105,7 +105,7 @@ const SectionHeader: React.FC<{
 );
 
 // Main App Component
-const TwitchMultiBot: React.FC = () => {
+const Twichka: React.FC = () => {
   const {
     bots,
     currentStream,
@@ -748,4 +748,4 @@ const TwitchMultiBot: React.FC = () => {
   );
 };
 
-export default TwitchMultiBot;
+export default Twichka;

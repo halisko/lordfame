@@ -176,10 +176,10 @@ const TwitchMultiBot: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Twitch MultiBot
+                  twichka
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Управление мульти-аккаунтами
+                  Мульти-бот для Twitch
                 </p>
               </div>
             </div>

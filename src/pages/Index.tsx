@@ -42,6 +42,7 @@ import { EmojiPicker } from "@/components/EmojiPicker";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { TwitchEmbed } from "@/components/TwitchEmbed";
+import { ProxyRecommendations } from "@/components/ProxyRecommendations";
 import { useNotifications } from "@/components/NotificationSystem";
 import { useTwitchBot } from "@/hooks/useTwitchBot";
 import { Bot as BotType } from "@/types";
@@ -128,9 +129,15 @@ const Twichka: React.FC = () => {
   const [showAddBot, setShowAddBot] = useState(false);
   const [showConnectStream, setShowConnectStream] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showProxyRecommendations, setShowProxyRecommendations] = useState(false);
   
   // Form State
-  const [botForm, setBotForm] = useState({ nickname: "", token: "" });
+  const [botForm, setBotForm] = useState({ 
+    nickname: "", 
+    token: "", 
+    proxy: "",
+    country: ""
+  });
   const [streamUrl, setStreamUrl] = useState("");
   const [selectedBotForChat, setSelectedBotForChat] = useState<string>("");
   const [chatInput, setChatInput] = useState("");
@@ -141,8 +148,8 @@ const Twichka: React.FC = () => {
 
   // Handlers
   const handleAddBot = () => {
-    addBot(botForm.nickname, botForm.token);
-    setBotForm({ nickname: "", token: "" });
+    addBot(botForm.nickname, botForm.token, botForm.proxy, botForm.country);
+    setBotForm({ nickname: "", token: "", proxy: "", country: "" });
     setShowAddBot(false);
   };
 
@@ -533,8 +540,33 @@ const Twichka: React.FC = () => {
                               <div className="font-medium text-sm">
                                 {bot.nickname}
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                ID: {bot.id.slice(-6)}
+                              <div className="text-xs text-muted-foreground space-y-0.5">
+                                <div>ID: {bot.id.slice(-6)}</div>
+                                {bot.proxy && (
+                                  <div className="flex items-center gap-1">
+                                    <span>🌐</span>
+                                    <span>{bot.proxy.split(':')[0]}</span>
+                                  </div>
+                                )}
+                                {bot.country && (
+                                  <div className="flex items-center gap-1">
+                                    <span>
+                                      {bot.country === 'US' && '🇺🇸'}
+                                      {bot.country === 'UK' && '🇬🇧'}
+                                      {bot.country === 'DE' && '🇩🇪'}
+                                      {bot.country === 'FR' && '🇫🇷'}
+                                      {bot.country === 'CA' && '🇨🇦'}
+                                      {bot.country === 'AU' && '🇦🇺'}
+                                      {bot.country === 'JP' && '🇯🇵'}
+                                      {bot.country === 'KR' && '🇰🇷'}
+                                      {bot.country === 'BR' && '🇧🇷'}
+                                      {bot.country === 'NL' && '🇳🇱'}
+                                      {bot.country === 'IT' && '🇮🇹'}
+                                      {bot.country === 'ES' && '🇪🇸'}
+                                    </span>
+                                    <span>{bot.country}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -644,7 +676,7 @@ const Twichka: React.FC = () => {
         open={showAddBot}
         onClose={() => {
           setShowAddBot(false);
-          setBotForm({ nickname: "", token: "" });
+          setBotForm({ nickname: "", token: "", proxy: "", country: "" });
         }}
         title="Добавить нового бота"
         maxWidth="max-w-lg"
@@ -665,7 +697,7 @@ const Twichka: React.FC = () => {
             <label className="block text-sm font-medium mb-2">
               Cookie-токен Twitch
             </label>
-            <Textarea
+            <Input
               value={botForm.token}
               onChange={(e) => setBotForm(prev => ({ ...prev, token: e.target.value }))}
               placeholder="Вставьте auth-token из куки Twitch..."
@@ -675,13 +707,59 @@ const Twichka: React.FC = () => {
               Найдите auth-token в куки браузера на сайте Twitch
             </p>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Прокси (необязательно)
+            </label>
+            <Input
+              value={botForm.proxy}
+              onChange={(e) => setBotForm(prev => ({ ...prev, proxy: e.target.value }))}
+              placeholder="ip:port:username:password или ip:port"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Формат: 192.168.1.1:8080:user:pass или 192.168.1.1:8080
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowProxyRecommendations(true)}
+              className="text-xs text-primary hover:underline mt-1"
+            >
+              Где купить качественные прокси? →
+            </button>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Страна (для прокси)
+            </label>
+            <select
+              value={botForm.country}
+              onChange={(e) => setBotForm(prev => ({ ...prev, country: e.target.value }))}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">Выберите страну</option>
+              <option value="US">🇺🇸 США</option>
+              <option value="UK">🇬🇧 Великобритания</option>
+              <option value="DE">🇩🇪 Германия</option>
+              <option value="FR">🇫🇷 Франция</option>
+              <option value="CA">🇨🇦 Канада</option>
+              <option value="AU">🇦🇺 Австралия</option>
+              <option value="JP">🇯🇵 Япония</option>
+              <option value="KR">🇰🇷 Южная Корея</option>
+              <option value="BR">🇧🇷 Бразилия</option>
+              <option value="NL">🇳🇱 Нидерланды</option>
+              <option value="IT">🇮🇹 Италия</option>
+              <option value="ES">🇪🇸 Испания</option>
+            </select>
+          </div>
           
           <div className="flex justify-end gap-3">
             <Button 
               variant="outline" 
               onClick={() => {
                 setShowAddBot(false);
-                setBotForm({ nickname: "", token: "" });
+                setBotForm({ nickname: "", token: "", proxy: "", country: "" });
               }}
             >
               Отмена
@@ -743,6 +821,16 @@ const Twichka: React.FC = () => {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Proxy Recommendations Modal */}
+      <Modal
+        open={showProxyRecommendations}
+        onClose={() => setShowProxyRecommendations(false)}
+        title="Рекомендации по прокси сервисам"
+        maxWidth="max-w-6xl"
+      >
+        <ProxyRecommendations />
       </Modal>
     </div>
   );

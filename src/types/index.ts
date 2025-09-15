@@ -2,9 +2,19 @@ export interface Bot {
   id: string;
   nickname: string;
   token: string;
+  proxy?: string;
+  country?: string;
   connected: boolean;
   status: 'online' | 'offline' | 'connecting';
   lastSeen?: Date;
+}
+
+export interface ProxyInfo {
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+  country: string;
 }
 
 export interface ChatMessage {

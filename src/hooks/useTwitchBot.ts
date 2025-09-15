@@ -100,7 +100,7 @@ export const useTwitchBot = () => {
   const [isConnecting, setIsConnecting] = useState(false);
 
   // Bot management
-  const addBot = useCallback((nickname: string, token: string) => {
+  const addBot = useCallback((nickname: string, token: string, proxy?: string, country?: string) => {
     if (!nickname.trim() || !token.trim()) {
       addNotification({
         type: "error",
@@ -123,6 +123,8 @@ export const useTwitchBot = () => {
       id: Math.random().toString(36).substring(2, 15),
       nickname: nickname.trim(),
       token: token.trim(),
+      proxy: proxy?.trim() || undefined,
+      country: country || undefined,
       connected: false,
       status: 'offline'
     };
@@ -132,7 +134,7 @@ export const useTwitchBot = () => {
     addNotification({
       type: "success",
       title: "Успех!",
-      message: `Бот ${nickname} добавлен`
+      message: `Бот ${nickname} добавлен${proxy ? ' с прокси' : ''}`
     });
   }, [bots, addNotification]);
 

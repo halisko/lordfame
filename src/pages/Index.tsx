@@ -1,839 +1,499 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Plus,
-  LogIn,
-  LogOut,
-  Send,
-  Smile,
-  Link as LinkIcon,
-  X,
-  Radio,
-  MessagesSquare,
-  Bot,
-  Store,
-  Coins,
-  Vote,
-  Activity,
-  Users,
-  Clock,
-  TrendingUp,
   Settings,
-  Trash2,
-  Copy,
-  ExternalLink,
-  Zap,
-  Heart,
-  Star
+  CreditCard,
+  ShoppingCart,
+  Globe,
+  Crown
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { GlassCard } from "@/components/GlassCard";
 import { StatusIndicator } from "@/components/StatusIndicator";
-import { EmojiPicker } from "@/components/EmojiPicker";
-import { AnimatedCounter } from "@/components/AnimatedCounter";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { TwitchEmbed } from "@/components/TwitchEmbed";
+import { PlatformSelector } from "@/components/PlatformSelector";
+import { PaymentSystem } from "@/components/PaymentSystem";
 import { ProxyRecommendations } from "@/components/ProxyRecommendations";
 import { useNotifications } from "@/components/NotificationSystem";
 import { useTwitchBot } from "@/hooks/useTwitchBot";
-import { Bot as BotType } from "@/types";
+import { Bot as BotType, Platform, PlatformService, PaymentMethod } from "@/types";
 
-// Modal Component
-const Modal: React.FC<{
-  open: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-  maxWidth?: string;
-}> = ({ open, onClose, title, children, maxWidth = "max-w-md" }) => (
-  <AnimatePresence>
-    {open && (
-      <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          className={`relative w-full ${maxWidth} mx-4`}
-        >
-          <GlassCard className="p-0">
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={onClose}
-                className="h-8 w-8 p-0"
-              >
-                <X size={16} />
-              </Button>
-            </div>
-            <div className="p-6">{children}</div>
-          </GlassCard>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
+const countries = [
+  { code: 'RU', name: 'Россия', flag: '🇷🇺' },
+  { code: 'US', name: 'США', flag: '🇺🇸' },
+  { code: 'GB', name: 'Великобритания', flag: '🇬🇧' },
+  { code: 'DE', name: 'Германия', flag: '🇩🇪' },
+  { code: 'FR', name: 'Франция', flag: '🇫🇷' },
+  { code: 'IT', name: 'Италия', flag: '🇮🇹' },
+  { code: 'ES', name: 'Испания', flag: '🇪🇸' },
+  { code: 'CA', name: 'Канада', flag: '🇨🇦' },
+  { code: 'AU', name: 'Австралия', flag: '🇦🇺' },
+  { code: 'JP', name: 'Япония', flag: '🇯🇵' }
+];
 
-// Section Header Component
-const SectionHeader: React.FC<{
-  icon: React.ElementType;
-  title: string;
-  children?: React.ReactNode;
-}> = ({ icon: Icon, title, children }) => (
-  <div className="flex items-center justify-between p-4 border-b border-border">
-    <div className="flex items-center gap-2 text-foreground">
-      <Icon size={18} />
-      <span className="font-medium">{title}</span>
-    </div>
-    {children}
-  </div>
-);
-
-// Main App Component
-const Twichka: React.FC = () => {
-  const {
-    bots,
-    currentStream,
-    chatMessages,
-    predictions,
-    channelPoints,
-    rewards,
-    isConnecting,
-    addBot,
-    removeBot,
-    connectBot,
-    disconnectBot,
-    connectAllBots,
-    disconnectAllBots,
-    connectToStream,
-    sendMessage
-  } = useTwitchBot();
-
-  // UI State
-  const [showAddBot, setShowAddBot] = useState(false);
-  const [showConnectStream, setShowConnectStream] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showProxyRecommendations, setShowProxyRecommendations] = useState(false);
+const Index: React.FC = () => {
+  const { addNotification } = useNotifications();
+  const { bots, addBot, removeBot, connectBot, disconnectBot } = useTwitchBot();
   
-  // Form State
-  const [botForm, setBotForm] = useState({ 
-    nickname: "", 
-    token: "", 
-    proxy: "",
-    country: ""
+  // Modal states
+  const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
+  const [isProxyModalOpen, setIsProxyModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  
+  // Form states
+  const [botForm, setBotForm] = useState({
+    nickname: '',
+    token: '',
+    platform: 'twitch' as Platform,
+    proxy: '',
+    country: 'RU'
   });
-  const [streamUrl, setStreamUrl] = useState("");
-  const [selectedBotForChat, setSelectedBotForChat] = useState<string>("");
-  const [chatInput, setChatInput] = useState("");
+  
+  // Payment state
+  const [selectedService, setSelectedService] = useState<{
+    service: PlatformService;
+    platform: Platform;
+  } | null>(null);
 
-  // Connected bots
-  const connectedBots = bots.filter(bot => bot.connected);
-  const onlineBots = bots.filter(bot => bot.status === 'online');
-
-  // Handlers
   const handleAddBot = () => {
-    addBot(botForm.nickname, botForm.token, botForm.proxy, botForm.country);
-    setBotForm({ nickname: "", token: "", proxy: "", country: "" });
-    setShowAddBot(false);
+    const { nickname, token, platform, proxy, country } = botForm;
+    const selectedCountry = countries.find(c => c.code === country)?.name || 'Россия';
+    
+    addBot(nickname, token, platform, proxy || undefined, selectedCountry);
+    
+    setBotForm({
+      nickname: '',
+      token: '',
+      platform: 'twitch',
+      proxy: '',
+      country: 'RU'
+    });
+    setIsAddBotModalOpen(false);
   };
 
-  const handleConnectToStream = () => {
-    connectToStream(streamUrl);
-    setShowConnectStream(false);
-    setStreamUrl("");
+  const handleServiceSelect = (service: PlatformService, platform: Platform) => {
+    setSelectedService({ service, platform });
+    setIsPaymentModalOpen(true);
   };
 
-  const handleSendMessage = () => {
-    if (selectedBotForChat && chatInput.trim()) {
-      sendMessage(selectedBotForChat, chatInput);
-      setChatInput("");
-    }
+  const handlePayment = (method: PaymentMethod) => {
+    addNotification({
+      type: 'success',
+      title: 'Оплата успешна!',
+      message: `Заказ "${selectedService?.service.name}" оплачен через ${method.name}`
+    });
+    setIsPaymentModalOpen(false);
+    setSelectedService(null);
   };
 
-  const handleEmojiPick = (emoji: string) => {
-    setChatInput(prev => prev + emoji);
-    setShowEmojiPicker(false);
+  const getCountryFlag = (countryName?: string) => {
+    const country = countries.find(c => c.name === countryName);
+    return country?.flag || '🌍';
+  };
+
+  const getPlatformIcon = (platform: Platform) => {
+    const icons = {
+      twitch: '🟣',
+      kick: '🟢', 
+      youtube: '🔴',
+      trovo: '🔵',
+      vkplay: '🟦',
+      dlive: '🟨',
+      telegram: '💙',
+      bigo: '🟪',
+      bizon365: '🟫',
+      yappy: '🟡',
+      tiktok: '⚫',
+      rumble: '🔶',
+      zoom: '🔷'
+    };
+    return icons[platform] || '⚪';
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-40 glass-card border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl twitch-gradient flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  twichka
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Мульти-бот для Twitch
-                </p>
-              </div>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
+        <div className="relative container mx-auto px-4 py-16">
+          <motion.div
+            className="text-center space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="text-6xl">🤖</div>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
+                wwbots
+              </h1>
+              <Badge variant="secondary" className="ml-2">
+                <Crown className="w-3 h-3 mr-1" />
+                Pro
+              </Badge>
             </div>
-
-            <div className="flex items-center gap-3">
-              <Button 
-                onClick={() => setShowAddBot(true)}
-                variant="glow"
-                className="gap-2"
-              >
-                <Plus size={16} />
-                Добавить бота
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => setShowConnectStream(true)}
-                className="gap-2"
-              >
-                <LinkIcon size={16} />
-                {currentStream ? "Сменить стрим" : "Подключить к стриму"}
-              </Button>
-
-              {connectedBots.length > 0 && (
-                <Button 
-                  variant="destructive" 
-                  onClick={disconnectAllBots}
-                  className="gap-2"
-                >
-                  <LogOut size={16} />
-                  Отключить всех
-                </Button>
-              )}
+            
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Профессиональный сервис накрутки активности для всех популярных платформ.
+              Боты, зрители, подписчики и многое другое.
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-4 mt-8">
+              <Badge variant="outline" className="px-4 py-2">
+                <Globe className="w-4 h-4 mr-2" />
+                13+ платформ
+              </Badge>
+              <Badge variant="outline" className="px-4 py-2">
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                30+ услуг
+              </Badge>
+              <Badge variant="outline" className="px-4 py-2">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Безопасная оплата
+              </Badge>
             </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-6 py-6">
-        <div className="grid grid-cols-12 gap-6">
-          
-          {/* Left Sidebar */}
-          <div className="col-span-3 space-y-6">
-            {/* Stream Stats */}
-            <GlassCard>
-              <SectionHeader icon={Activity} title="Статистика стрима" />
-              <div className="p-4 space-y-3">
-                {currentStream ? (
-                  <>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Зрителей</span>
-                      <AnimatedCounter 
-                        value={currentStream.viewerCount} 
-                        className="font-medium"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">В эфире</span>
-                      <AnimatedCounter
-                        value={currentStream.startedAt ? 
-                          Math.floor((Date.now() - currentStream.startedAt.getTime()) / (1000 * 60)) 
-                          : 0}
-                        format={(v) => `${v} мин`}
-                        className="font-medium"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Статус</span>
-                      <Badge variant="default" className="bg-success text-success-foreground">
-                        <StatusIndicator online size="sm" className="mr-1" />
-                        В сети
-                      </Badge>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-sm text-muted-foreground">
-                    Подключитесь к стриму для просмотра статистики
-                  </div>
-                )}
-              </div>
-            </GlassCard>
-
-            {/* Predictions */}
-            <GlassCard>
-              <SectionHeader icon={Vote} title="Прогнозы">
-                <Button variant="ghost" size="sm">Обновить</Button>
-              </SectionHeader>
-              <div className="p-4">
-                {predictions.length > 0 ? (
-                  <div className="space-y-3">
-                    {predictions.map(prediction => (
-                      <div key={prediction.id} className="space-y-2">
-                        <h4 className="text-sm font-medium">{prediction.title}</h4>
-                        {prediction.outcomes.map(outcome => (
-                          <div key={outcome.id} className="space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span className={`text-${outcome.color}-400`}>
-                                {outcome.title}
-                              </span>
-                              <span>{outcome.totalPoints.toLocaleString()} баллов</span>
-                            </div>
-                            <Progress 
-                              value={outcome.totalPoints / 200} 
-                              className="h-2"
-                            />
-                          </div>
-                        ))}
-                        <Badge variant="secondary" className="text-xs">
-                          {prediction.status === 'ACTIVE' ? 'Активен' : 'Завершен'}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted-foreground">
-                    Сейчас нет активных прогнозов
-                  </div>
-                )}
-              </div>
-            </GlassCard>
-
-            {/* Channel Points */}
-            <GlassCard>
-              <SectionHeader icon={Coins} title="Баллы канала" />
-              <div className="p-4 space-y-4">
-                <div className="text-center">
-                  <AnimatedCounter
-                    value={channelPoints}
-                    className="text-2xl font-bold text-primary"
-                  />
-                  <div className="text-sm text-muted-foreground">Доступно баллов</div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Store size={16} />
-                    Магазин за баллы
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {rewards.slice(0, 4).map(reward => (
-                      <Button
-                        key={reward.id}
-                        variant="outline"
-                        size="sm"
-                        className="justify-start text-xs h-auto p-2"
-                      >
-                        <div className="text-left">
-                          <div className="font-medium">{reward.title}</div>
-                          <div className="text-muted-foreground">{reward.cost} баллов</div>
-                        </div>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-
-          {/* Center Area */}
-          <div className="col-span-6 space-y-6">
-            {/* Stream Player */}
-            <GlassCard>
-              <SectionHeader 
-                icon={Radio} 
-                title={currentStream ? currentStream.title : "Стрим не выбран"}
-              >
-                {currentStream && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users size={16} />
-                    <AnimatedCounter value={currentStream.viewerCount} />
-                    <Clock size={16} className="ml-2" />
-                    <AnimatedCounter 
-                      value={Math.floor((Date.now() - (currentStream.startedAt?.getTime() || Date.now())) / (1000 * 60))}
-                      format={(v) => `${v} мин`}
-                    />
-                  </div>
-                )}
-              </SectionHeader>
-              
-              <div className="p-4">
-                <TwitchEmbed
-                  streamUrl={currentStream?.url}
-                  title={currentStream?.title}
-                  streamerName={currentStream?.streamerName}
-                  viewerCount={currentStream?.viewerCount}
-                  isLive={currentStream?.isLive}
-                />
-              </div>
-            </GlassCard>
-
-            {/* Chat Interface */}
-            <GlassCard>
-              <SectionHeader icon={MessagesSquare} title="Чат">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Аккаунт:</span>
-                  <select
-                    value={selectedBotForChat}
-                    onChange={(e) => setSelectedBotForChat(e.target.value)}
-                    className="bg-secondary border border-border rounded-lg px-3 py-1 text-sm"
-                  >
-                    <option value="">Выберите бота</option>
-                    {connectedBots.map(bot => (
-                      <option key={bot.id} value={bot.id}>
-                        {bot.nickname}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </SectionHeader>
-
-              {/* Chat Messages */}
-              <div className="h-80 overflow-y-auto p-4 space-y-3">
-                {chatMessages.length > 0 ? (
-                  chatMessages.map(message => (
-                    <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-start gap-3"
-                    >
-                      <StatusIndicator online size="sm" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium text-primary">
-                            {message.botNickname}
-                          </span>
-                          <span className="text-muted-foreground text-xs">
-                            {message.timestamp.toLocaleTimeString()}
-                          </span>
-                        </div>
-                        <p className="text-sm leading-relaxed mt-1">
-                          {message.text}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                    Сообщений пока нет
-                  </div>
-                )}
-              </div>
-
-              {/* Chat Input */}
-              <div className="p-4 border-t border-border">
-                <div className="flex items-center gap-2 relative">
-                  <div className="flex-1 relative">
-                    <Input
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      placeholder={
-                        selectedBotForChat 
-                          ? `Написать от имени ${connectedBots.find(b => b.id === selectedBotForChat)?.nickname}...`
-                          : "Выберите аккаунт для отправки"
-                      }
-                      disabled={!selectedBotForChat}
-                      className="pr-12"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                    >
-                      <Smile size={16} />
-                    </Button>
-                    
-                    <EmojiPicker
-                      open={showEmojiPicker}
-                      onPick={handleEmojiPick}
-                      onClose={() => setShowEmojiPicker(false)}
-                    />
-                  </div>
-                  
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!selectedBotForChat || !chatInput.trim()}
-                    className="gap-2"
-                  >
-                    <Send size={16} />
-                    Отправить
-                  </Button>
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-
-          {/* Right Sidebar - Bot Management */}
-          <div className="col-span-3">
-            <GlassCard>
-              <SectionHeader 
-                icon={Bot} 
-                title="Управление ботами"
-              >
-                <Badge variant="secondary">
-                  {bots.length} ботов
-                </Badge>
-              </SectionHeader>
-
-              <div className="p-4 space-y-4">
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 gap-2">
-                  <Button 
-                    size="sm" 
-                    onClick={() => setShowAddBot(true)}
-                    className="gap-1"
-                  >
-                    <Plus size={14} />
-                    Добавить
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={connectAllBots}
-                    disabled={bots.length === 0}
-                    className="gap-1"
-                  >
-                    <LogIn size={14} />
-                    Подключить всех
-                  </Button>
-                </div>
-
-                <Separator />
-
-                {/* Bot List */}
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {bots.length > 0 ? (
-                    bots.map(bot => (
-                      <motion.div
-                        key={bot.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-3 bg-secondary/50 rounded-lg border border-border hover-lift"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <StatusIndicator 
-                              online={bot.status === 'online'} 
-                              size="sm" 
-                            />
-                            <div>
-                              <div className="font-medium text-sm">
-                                {bot.nickname}
-                              </div>
-                              <div className="text-xs text-muted-foreground space-y-0.5">
-                                <div>ID: {bot.id.slice(-6)}</div>
-                                {bot.proxy && (
-                                  <div className="flex items-center gap-1">
-                                    <span>🌐</span>
-                                    <span>{bot.proxy.split(':')[0]}</span>
-                                  </div>
-                                )}
-                                {bot.country && (
-                                  <div className="flex items-center gap-1">
-                                    <span>
-                                      {bot.country === 'US' && '🇺🇸'}
-                                      {bot.country === 'UK' && '🇬🇧'}
-                                      {bot.country === 'DE' && '🇩🇪'}
-                                      {bot.country === 'FR' && '🇫🇷'}
-                                      {bot.country === 'CA' && '🇨🇦'}
-                                      {bot.country === 'AU' && '🇦🇺'}
-                                      {bot.country === 'JP' && '🇯🇵'}
-                                      {bot.country === 'KR' && '🇰🇷'}
-                                      {bot.country === 'BR' && '🇧🇷'}
-                                      {bot.country === 'NL' && '🇳🇱'}
-                                      {bot.country === 'IT' && '🇮🇹'}
-                                      {bot.country === 'ES' && '🇪🇸'}
-                                    </span>
-                                    <span>{bot.country}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeBot(bot.id)}
-                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                          >
-                            <Trash2 size={12} />
-                          </Button>
-                        </div>
-                        
-                        <div className="flex items-center gap-1">
-                          {bot.connected ? (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => disconnectBot(bot.id)}
-                              className="flex-1 gap-1 text-xs h-7"
-                            >
-                              <LogOut size={12} />
-                              Отключить
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => connectBot(bot.id)}
-                              disabled={bot.status === 'connecting'}
-                              className="flex-1 gap-1 text-xs h-7"
-                            >
-                              {bot.status === 'connecting' ? (
-                                <>
-                                  <LoadingSpinner size="sm" />
-                                  Подключение...
-                                </>
-                              ) : (
-                                <>
-                                  <LogIn size={12} />
-                                  Подключить
-                                </>
-                              )}
-                            </Button>
-                          )}
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigator.clipboard.writeText(bot.id)}
-                            className="h-7 w-7 p-0"
-                          >
-                            <Copy size={12} />
-                          </Button>
-                        </div>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Bot className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <div className="text-sm">Нет добавленных ботов</div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => setShowAddBot(true)}
-                        className="mt-2"
-                      >
-                        Добавить первого бота
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Stats */}
-                {bots.length > 0 && (
-                  <>
-                    <Separator />
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                      <div>
-                        <div className="text-lg font-semibold text-success">
-                          <AnimatedCounter value={onlineBots.length} />
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Онлайн
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-semibold text-muted-foreground">
-                          <AnimatedCounter value={bots.length - onlineBots.length} />
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Офлайн
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </GlassCard>
-          </div>
+          </motion.div>
         </div>
       </div>
 
-      {/* Modals */}
+      <div className="container mx-auto px-4 py-8">
+        <Tabs defaultValue="services" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="services">Услуги</TabsTrigger>
+            <TabsTrigger value="bots">Мои боты</TabsTrigger>
+            <TabsTrigger value="account">Аккаунт</TabsTrigger>
+          </TabsList>
 
-      {/* Add Bot Modal */}
-      <Modal
-        open={showAddBot}
-        onClose={() => {
-          setShowAddBot(false);
-          setBotForm({ nickname: "", token: "", proxy: "", country: "" });
-        }}
-        title="Добавить нового бота"
-        maxWidth="max-w-lg"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Никнейм бота
-            </label>
-            <Input
-              value={botForm.nickname}
-              onChange={(e) => setBotForm(prev => ({ ...prev, nickname: e.target.value }))}
-              placeholder="Например: my_twitch_bot"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Cookie-токен Twitch
-            </label>
-            <Input
-              value={botForm.token}
-              onChange={(e) => setBotForm(prev => ({ ...prev, token: e.target.value }))}
-              placeholder="Вставьте auth-token из куки Twitch..."
-              className="h-24 resize-none"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Найдите auth-token в куки браузера на сайте Twitch
-            </p>
-          </div>
+          {/* Услуги */}
+          <TabsContent value="services">
+            <div className="space-y-8">
+              <PlatformSelector
+                onPlatformSelect={() => {}}
+                onServiceSelect={handleServiceSelect}
+              />
+            </div>
+          </TabsContent>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Прокси (необязательно)
-            </label>
-            <Input
-              value={botForm.proxy}
-              onChange={(e) => setBotForm(prev => ({ ...prev, proxy: e.target.value }))}
-              placeholder="ip:port:username:password или ip:port"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Формат: 192.168.1.1:8080:user:pass или 192.168.1.1:8080
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowProxyRecommendations(true)}
-              className="text-xs text-primary hover:underline mt-1"
-            >
-              Где купить качественные прокси? →
-            </button>
-          </div>
+          {/* Боты */}
+          <TabsContent value="bots">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-foreground">Управление ботами</h2>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsProxyModalOpen(true)}
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Прокси
+                  </Button>
+                  <Button onClick={() => setIsAddBotModalOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Добавить бота
+                  </Button>
+                </div>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Страна (для прокси)
-            </label>
-            <select
-              value={botForm.country}
-              onChange={(e) => setBotForm(prev => ({ ...prev, country: e.target.value }))}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">Выберите страну</option>
-              <option value="US">🇺🇸 США</option>
-              <option value="UK">🇬🇧 Великобритания</option>
-              <option value="DE">🇩🇪 Германия</option>
-              <option value="FR">🇫🇷 Франция</option>
-              <option value="CA">🇨🇦 Канада</option>
-              <option value="AU">🇦🇺 Австралия</option>
-              <option value="JP">🇯🇵 Япония</option>
-              <option value="KR">🇰🇷 Южная Корея</option>
-              <option value="BR">🇧🇷 Бразилия</option>
-              <option value="NL">🇳🇱 Нидерланды</option>
-              <option value="IT">🇮🇹 Италия</option>
-              <option value="ES">🇪🇸 Испания</option>
-            </select>
-          </div>
-          
-          <div className="flex justify-end gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setShowAddBot(false);
-                setBotForm({ nickname: "", token: "", proxy: "", country: "" });
-              }}
-            >
-              Отмена
-            </Button>
-            <Button 
-              onClick={handleAddBot}
-              disabled={!botForm.nickname.trim() || !botForm.token.trim()}
-            >
-              Добавить бота
-            </Button>
-          </div>
+              <div className="grid gap-4">
+                {bots.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <div className="text-6xl mb-4">🤖</div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      Пока нет ботов
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Добавьте первого бота для начала работы
+                    </p>
+                    <Button onClick={() => setIsAddBotModalOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Добавить бота
+                    </Button>
+                  </Card>
+                ) : (
+                  bots.map((bot) => (
+                    <Card key={bot.id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl">{getPlatformIcon(bot.platform)}</div>
+                          <StatusIndicator 
+                            online={bot.status === 'online'} 
+                            className="w-3 h-3" 
+                          />
+                          <div>
+                            <div className="font-semibold text-foreground">
+                              {bot.nickname}
+                            </div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              <span className="capitalize">{bot.platform}</span>
+                              {bot.country && (
+                                <>
+                                  <span>•</span>
+                                  <span>{getCountryFlag(bot.country)} {bot.country}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Badge variant={bot.connected ? 'default' : 'secondary'}>
+                            {bot.connected ? 'Онлайн' : 'Оффлайн'}
+                          </Badge>
+                          
+                          <Button
+                            size="sm"
+                            variant={bot.connected ? 'destructive' : 'default'}
+                            onClick={() => bot.connected ? disconnectBot(bot.id) : connectBot(bot.id)}
+                          >
+                            {bot.connected ? 'Отключить' : 'Подключить'}
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => removeBot(bot.id)}
+                          >
+                            Удалить
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Аккаунт */}
+          <TabsContent value="account">
+            <div className="space-y-6">
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Информация об аккаунте
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Статус:</span>
+                    <Badge variant="default">Pro аккаунт</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Баланс:</span>
+                    <span className="font-semibold">2,500 ₽</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Активных ботов:</span>
+                    <span className="font-semibold">{bots.filter(b => b.connected).length}</span>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Пополнить баланс
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Пополните баланс для заказа услуг
+                </p>
+                <Button className="w-full">
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Пополнить баланс
+                </Button>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Модальные окна */}
+      
+      {/* Добавление бота */}
+      {isAddBotModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full max-w-md"
+          >
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-foreground">Добавить бота</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setIsAddBotModalOpen(false)}
+                >
+                  ×
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Платформа
+                  </label>
+                  <Select 
+                    value={botForm.platform} 
+                    onValueChange={(value: Platform) => setBotForm({...botForm, platform: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="twitch">🟣 Twitch</SelectItem>
+                      <SelectItem value="kick">🟢 Kick</SelectItem>
+                      <SelectItem value="youtube">🔴 YouTube</SelectItem>
+                      <SelectItem value="trovo">🔵 Trovo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Никнейм
+                  </label>
+                  <Input
+                    placeholder="Введите никнейм"
+                    value={botForm.nickname}
+                    onChange={(e) => setBotForm({...botForm, nickname: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Токен
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="Введите токен"
+                    value={botForm.token}
+                    onChange={(e) => setBotForm({...botForm, token: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Прокси (опционально)
+                  </label>
+                  <Input
+                    placeholder="ip:port:user:pass или ip:port"
+                    value={botForm.proxy}
+                    onChange={(e) => setBotForm({...botForm, proxy: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Страна
+                  </label>
+                  <Select 
+                    value={botForm.country} 
+                    onValueChange={(value) => setBotForm({...botForm, country: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.flag} {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAddBotModalOpen(false)}
+                    className="flex-1"
+                  >
+                    Отмена
+                  </Button>
+                  <Button onClick={handleAddBot} className="flex-1">
+                    Добавить
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
         </div>
-      </Modal>
+      )}
 
-      {/* Connect to Stream Modal */}
-      <Modal
-        open={showConnectStream}
-        onClose={() => {
-          setShowConnectStream(false);
-          setStreamUrl("");
-        }}
-        title="Подключиться к стриму"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              URL стрима Twitch
-            </label>
-            <Input
-              value={streamUrl}
-              onChange={(e) => setStreamUrl(e.target.value)}
-              placeholder="https://www.twitch.tv/username"
-            />
-          </div>
-          
-          <div className="flex justify-end gap-3">
-            <Button 
-              variant="outline"
-              onClick={() => {
-                setShowConnectStream(false);
-                setStreamUrl("");
-              }}
-            >
-              Отмена
-            </Button>
-            <Button 
-              onClick={handleConnectToStream}
-              disabled={!streamUrl.trim() || isConnecting}
-              variant="twitch"
-            >
-              {isConnecting ? (
-                <>
-                  <LoadingSpinner size="sm" />
-                  Подключение...
-                </>
-              ) : (
-                "Подключиться"
-              )}
-            </Button>
-          </div>
+      {/* Прокси рекомендации */}
+      {isProxyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full max-w-2xl"
+          >
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-foreground">Рекомендации прокси</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setIsProxyModalOpen(false)}
+                >
+                  ×
+                </Button>
+              </div>
+              
+              <ProxyRecommendations />
+              
+              <div className="flex justify-end pt-4">
+                <Button onClick={() => setIsProxyModalOpen(false)}>
+                  Закрыть
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
         </div>
-      </Modal>
+      )}
 
-      {/* Proxy Recommendations Modal */}
-      <Modal
-        open={showProxyRecommendations}
-        onClose={() => setShowProxyRecommendations(false)}
-        title="Рекомендации по прокси сервисам"
-        maxWidth="max-w-6xl"
-      >
-        <ProxyRecommendations />
-      </Modal>
+      {/* Оплата */}
+      {isPaymentModalOpen && selectedService && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full max-w-2xl"
+          >
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-foreground">Оплата услуги</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setIsPaymentModalOpen(false);
+                    setSelectedService(null);
+                  }}
+                >
+                  ×
+                </Button>
+              </div>
+              
+              <PaymentSystem
+                amount={selectedService.service.price}
+                currency={selectedService.service.currency}
+                serviceName={selectedService.service.name}
+                onPayment={handlePayment}
+              />
+            </Card>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Twichka;
+export default Index;

@@ -1,12 +1,40 @@
+export type Platform = 'twitch' | 'kick' | 'youtube' | 'trovo' | 'vkplay' | 'dlive' | 'telegram' | 'bigo' | 'bizon365' | 'yappy' | 'tiktok' | 'rumble' | 'zoom';
+
 export interface Bot {
   id: string;
   nickname: string;
   token: string;
   proxy?: string;
   country?: string;
+  platform: Platform;
   connected: boolean;
   status: 'online' | 'offline' | 'connecting';
   lastSeen?: Date;
+}
+
+export interface PlatformService {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: 'RUB' | 'USD';
+  icon: string;
+  popular?: boolean;
+}
+
+export interface PlatformInfo {
+  id: Platform;
+  name: string;
+  icon: string;
+  color: string;
+  services: PlatformService[];
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
 }
 
 export interface ProxyInfo {

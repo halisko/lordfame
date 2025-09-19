@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Bot, ChatMessage, StreamInfo, Prediction, Poll, ChannelPointsReward } from "@/types";
+import { Bot, ChatMessage, StreamInfo, Prediction, Poll, ChannelPointsReward, Platform } from "@/types";
 import { useNotifications } from "@/components/NotificationSystem";
 
 // Mock data and functions for demonstration
@@ -100,7 +100,7 @@ export const useTwitchBot = () => {
   const [isConnecting, setIsConnecting] = useState(false);
 
   // Bot management
-  const addBot = useCallback((nickname: string, token: string, proxy?: string, country?: string) => {
+  const addBot = useCallback((nickname: string, token: string, platform: Platform = 'twitch', proxy?: string, country?: string) => {
     if (!nickname.trim() || !token.trim()) {
       addNotification({
         type: "error",
@@ -123,8 +123,9 @@ export const useTwitchBot = () => {
       id: Math.random().toString(36).substring(2, 15),
       nickname: nickname.trim(),
       token: token.trim(),
+      platform,
       proxy: proxy?.trim() || undefined,
-      country: country || undefined,
+      country: country || 'Россия',
       connected: false,
       status: 'offline'
     };

@@ -25,6 +25,21 @@ import { useNotifications } from "@/components/NotificationSystem";
 import { useTwitchBot } from "@/hooks/useTwitchBot";
 import { Bot as BotType, Platform, PlatformService, PaymentMethod } from "@/types";
 
+// Import platform icons
+import twitchIcon from '@/assets/icons/twitch.png';
+import kickIcon from '@/assets/icons/kick.png';
+import youtubeIcon from '@/assets/icons/youtube.png';
+import trovoIcon from '@/assets/icons/trovo.png';
+import vkplayIcon from '@/assets/icons/vkplay.png';
+import dliveIcon from '@/assets/icons/dlive.png';
+import telegramIcon from '@/assets/icons/telegram.png';
+import bigoIcon from '@/assets/icons/bigo.png';
+import bizon365Icon from '@/assets/icons/bizon365.png';
+import yappyIcon from '@/assets/icons/yappy.png';
+import tiktokIcon from '@/assets/icons/tiktok.png';
+import rumbleIcon from '@/assets/icons/rumble.png';
+import zoomIcon from '@/assets/icons/zoom.png';
+
 const countries = [
   { code: 'RU', name: 'Россия', flag: '🇷🇺' },
   { code: 'US', name: 'США', flag: '🇺🇸' },
@@ -100,21 +115,21 @@ const Index: React.FC = () => {
 
   const getPlatformIcon = (platform: Platform) => {
     const icons = {
-      twitch: '🟣',
-      kick: '🟢', 
-      youtube: '🔴',
-      trovo: '🔵',
-      vkplay: '🟦',
-      dlive: '🟨',
-      telegram: '💙',
-      bigo: '🟪',
-      bizon365: '🟫',
-      yappy: '🟡',
-      tiktok: '⚫',
-      rumble: '🔶',
-      zoom: '🔷'
+      twitch: twitchIcon,
+      kick: kickIcon, 
+      youtube: youtubeIcon,
+      trovo: trovoIcon,
+      vkplay: vkplayIcon,
+      dlive: dliveIcon,
+      telegram: telegramIcon,
+      bigo: bigoIcon,
+      bizon365: bizon365Icon,
+      yappy: yappyIcon,
+      tiktok: tiktokIcon,
+      rumble: rumbleIcon,
+      zoom: zoomIcon
     };
-    return icons[platform] || '⚪';
+    return icons[platform] || twitchIcon;
   };
 
   return (
@@ -221,7 +236,11 @@ const Index: React.FC = () => {
                     <Card key={bot.id} className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="text-2xl">{getPlatformIcon(bot.platform)}</div>
+                          <img 
+                            src={getPlatformIcon(bot.platform)} 
+                            alt={bot.platform} 
+                            className="w-6 h-6 object-contain"
+                          />
                           <StatusIndicator 
                             online={bot.status === 'online'} 
                             className="w-3 h-3" 
@@ -346,10 +365,30 @@ const Index: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="twitch">🟣 Twitch</SelectItem>
-                      <SelectItem value="kick">🟢 Kick</SelectItem>
-                      <SelectItem value="youtube">🔴 YouTube</SelectItem>
-                      <SelectItem value="trovo">🔵 Trovo</SelectItem>
+                      <SelectItem value="twitch">
+                        <div className="flex items-center gap-2">
+                          <img src={twitchIcon} alt="Twitch" className="w-4 h-4" />
+                          Twitch
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="kick">
+                        <div className="flex items-center gap-2">
+                          <img src={kickIcon} alt="Kick" className="w-4 h-4" />
+                          Kick
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="youtube">
+                        <div className="flex items-center gap-2">
+                          <img src={youtubeIcon} alt="YouTube" className="w-4 h-4" />
+                          YouTube
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="trovo">
+                        <div className="flex items-center gap-2">
+                          <img src={trovoIcon} alt="Trovo" className="w-4 h-4" />
+                          Trovo
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

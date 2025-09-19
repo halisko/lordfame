@@ -19,11 +19,26 @@ import {
   Zap
 } from 'lucide-react';
 
+// Import platform icons
+import twitchIcon from '@/assets/icons/twitch.png';
+import kickIcon from '@/assets/icons/kick.png';
+import youtubeIcon from '@/assets/icons/youtube.png';
+import trovoIcon from '@/assets/icons/trovo.png';
+import vkplayIcon from '@/assets/icons/vkplay.png';
+import dliveIcon from '@/assets/icons/dlive.png';
+import telegramIcon from '@/assets/icons/telegram.png';
+import bigoIcon from '@/assets/icons/bigo.png';
+import bizon365Icon from '@/assets/icons/bizon365.png';
+import yappyIcon from '@/assets/icons/yappy.png';
+import tiktokIcon from '@/assets/icons/tiktok.png';
+import rumbleIcon from '@/assets/icons/rumble.png';
+import zoomIcon from '@/assets/icons/zoom.png';
+
 const platformsData: PlatformInfo[] = [
   {
     id: 'twitch',
     name: 'Twitch',
-    icon: '🟣',
+    icon: twitchIcon,
     color: 'bg-purple-600',
     services: [
       { id: 'twitch-viewers', name: 'Twitch зрители', description: 'Увеличение числа зрителей', price: 100, currency: 'RUB', icon: '👥' },
@@ -35,7 +50,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'kick',
     name: 'Kick',
-    icon: '🟢',
+    icon: kickIcon,
     color: 'bg-green-600',
     services: [
       { id: 'kick-viewers', name: 'Kick.com зрители', description: 'Увеличение зрителей', price: 90, currency: 'RUB', icon: '👥' },
@@ -47,7 +62,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'youtube',
     name: 'YouTube',
-    icon: '🔴',
+    icon: youtubeIcon,
     color: 'bg-red-600',
     services: [
       { id: 'yt-viewers', name: 'YouTube зрители', description: 'Зрители для стрима', price: 120, currency: 'RUB', icon: '👥' },
@@ -62,7 +77,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'trovo',
     name: 'Trovo',
-    icon: '🔵',
+    icon: trovoIcon,
     color: 'bg-blue-600',
     services: [
       { id: 'trovo-viewers', name: 'Trovo зрители', description: 'Увеличение зрителей', price: 85, currency: 'RUB', icon: '👥' },
@@ -75,7 +90,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'vkplay',
     name: 'VKPlay',
-    icon: '🟦',
+    icon: vkplayIcon,
     color: 'bg-blue-500',
     services: [
       { id: 'vk-viewers', name: 'VKPlay зрители', description: 'Зрители для стрима', price: 95, currency: 'RUB', icon: '👥' },
@@ -85,7 +100,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'dlive',
     name: 'DLive',
-    icon: '🟨',
+    icon: dliveIcon,
     color: 'bg-yellow-600',
     services: [
       { id: 'dlive-viewers', name: 'DLive зрители', description: 'Зрители для стрима', price: 110, currency: 'RUB', icon: '👥' },
@@ -94,7 +109,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'telegram',
     name: 'Telegram',
-    icon: '💙',
+    icon: telegramIcon,
     color: 'bg-cyan-500',
     services: [
       { id: 'tg-subs', name: 'Telegram подписчики', description: 'Подписчики на канал', price: 35, currency: 'RUB', icon: '❤️' },
@@ -104,7 +119,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'bigo',
     name: 'Bigo',
-    icon: '🟪',
+    icon: bigoIcon,
     color: 'bg-purple-500',
     services: [
       { id: 'bigo-viewers', name: 'Bigo зрители', description: 'Зрители для стрима', price: 105, currency: 'RUB', icon: '👥' },
@@ -113,7 +128,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'bizon365',
     name: 'Bizon365',
-    icon: '🟫',
+    icon: bizon365Icon,
     color: 'bg-amber-600',
     services: [
       { id: 'bizon-viewers', name: 'Bizon365 зрители', description: 'Зрители для вебинара', price: 130, currency: 'RUB', icon: '👥' },
@@ -122,7 +137,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'yappy',
     name: 'Yappy',
-    icon: '🟡',
+    icon: yappyIcon,
     color: 'bg-yellow-500',
     services: [
       { id: 'tiktok-viewers', name: 'TikTok зрители', description: 'Зрители для прямого эфира', price: 115, currency: 'RUB', icon: '👥' },
@@ -131,7 +146,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'tiktok',
     name: 'TikTok',
-    icon: '⚫',
+    icon: tiktokIcon,
     color: 'bg-gray-800',
     services: [
       { id: 'tiktok-viewers', name: 'TikTok зрители', description: 'Зрители для прямого эфира', price: 115, currency: 'RUB', icon: '👥' },
@@ -140,7 +155,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'rumble',
     name: 'Rumble',
-    icon: '🔶',
+    icon: rumbleIcon,
     color: 'bg-orange-600',
     services: [
       { id: 'rumble-viewers', name: 'Rumble зрители', description: 'Зрители для стрима', price: 100, currency: 'RUB', icon: '👥' },
@@ -150,7 +165,7 @@ const platformsData: PlatformInfo[] = [
   {
     id: 'zoom',
     name: 'Zoom',
-    icon: '🔷',
+    icon: zoomIcon,
     color: 'bg-blue-400',
     services: [
       { id: 'zoom-viewers', name: 'Zoom зрители', description: 'Участники конференции', price: 140, currency: 'RUB', icon: '👥' },
@@ -190,21 +205,27 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Card
-              className={`p-4 cursor-pointer transition-all border-2 hover:shadow-lg ${
-                selectedPlatform === platform.id
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border hover:border-primary/50'
-              }`}
-              onClick={() => handlePlatformClick(platform.id)}
-            >
-              <div className="text-center space-y-2">
-                <div className="text-3xl">{platform.icon}</div>
-                <div className="text-sm font-medium text-foreground">
-                  {platform.name}
+              <Card
+                className={`p-4 cursor-pointer transition-all border-2 hover:shadow-lg ${
+                  selectedPlatform === platform.id
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50'
+                }`}
+                onClick={() => handlePlatformClick(platform.id)}
+              >
+                <div className="text-center space-y-2">
+                  <div className="flex justify-center">
+                    <img 
+                      src={platform.icon} 
+                      alt={platform.name} 
+                      className="w-8 h-8 object-contain"
+                    />
+                  </div>
+                  <div className="text-sm font-medium text-foreground">
+                    {platform.name}
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
           </motion.div>
         ))}
       </div>
@@ -220,7 +241,11 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
             <Card className="p-6">
               <div className="mb-4">
                 <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
-                  <span className="text-2xl">{selectedPlatformData.icon}</span>
+                  <img 
+                    src={selectedPlatformData.icon} 
+                    alt={selectedPlatformData.name} 
+                    className="w-6 h-6 object-contain"
+                  />
                   Услуги {selectedPlatformData.name}
                 </h3>
                 <Separator />

@@ -29,8 +29,13 @@ import { PaymentSystem } from "@/components/PaymentSystem";
 import { ProxyRecommendations } from "@/components/ProxyRecommendations";
 import { BalanceTopUp } from "@/components/BalanceTopUp";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ShoppingCart } from "@/components/ShoppingCart";
+import { OrderHistory } from "@/components/OrderHistory";
+import { ActiveOrders } from "@/components/ActiveOrders";
+import { AdminPanel } from "@/components/AdminPanel";
 import { useNotifications } from "@/components/NotificationSystem";
 import { useTwitchBot } from "@/hooks/useTwitchBot";
+import { useShoppingCart } from "@/hooks/useShoppingCart";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Bot as BotType, Platform, PlatformService } from "@/types";
@@ -76,6 +81,18 @@ const Index: React.FC = () => {
   const { addNotification } = useNotifications();
   const { bots, addBot, removeBot, connectBot, disconnectBot } = useTwitchBot();
   const { user, profile, loading, signOut, isAuthenticated, isWorker } = useAuth();
+  const { 
+    cartItems, 
+    isCartOpen, 
+    addToCart, 
+    updateQuantity, 
+    updateDuration, 
+    removeFromCart, 
+    clearCart, 
+    checkout, 
+    openCart, 
+    closeCart 
+  } = useShoppingCart();
   
   // States
   const [paymentMethods, setPaymentMethods] = useState<DatabasePaymentMethod[]>([]);
@@ -228,8 +245,21 @@ const Index: React.FC = () => {
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={openCart}
+                  className="relative"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {cartItems.length}
+                    </span>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => setIsBalanceModalOpen(true)}
-                  className="ml-2 h-7 px-2"
+                  className="h-7 px-2"
                 >
                   <Plus className="w-3 h-3" />
                 </Button>
@@ -294,10 +324,12 @@ const Index: React.FC = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${isWorker ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="services">Услуги</TabsTrigger>
-            <TabsTrigger value="bots">Мои боты</TabsTrigger>
+            <TabsTrigger value="active">Активные</TabsTrigger>
+            <TabsTrigger value="orders">Заказы</TabsTrigger>
             <TabsTrigger value="account">Аккаунт</TabsTrigger>
+            {isWorker && <TabsTrigger value="admin">Админ</TabsTrigger>}
           </TabsList>
 
           {/* Услуги */}
@@ -305,103 +337,24 @@ const Index: React.FC = () => {
             <div className="space-y-8">
               <PlatformSelector
                 onPlatformSelect={() => {}}
-                onServiceSelect={handleServiceSelect}
+                onServiceSelect={(service, platform) => {
+                  const platformData = platformsData.find(p => p.id === platform);
+                  if (platformData) {
+                    addToCart(service, platform, platformData.icon);
+                  }
+                }}
               />
             </div>
           </TabsContent>
 
-          {/* Боты */}
-          <TabsContent value="bots">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-foreground">Управление ботами</h2>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsProxyModalOpen(true)}
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Прокси
-                  </Button>
-                  <Button onClick={() => setIsAddBotModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Добавить бота
-                  </Button>
-                </div>
-              </div>
+          {/* Активные заказы */}
+          <TabsContent value="active">
+            <ActiveOrders />
+          </TabsContent>
 
-              <div className="grid gap-4">
-                {bots.length === 0 ? (
-                  <Card className="p-8 text-center">
-                    <div className="text-6xl mb-4">🤖</div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      Пока нет ботов
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Добавьте первого бота для начала работы
-                    </p>
-                    <Button onClick={() => setIsAddBotModalOpen(true)}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Добавить бота
-                    </Button>
-                  </Card>
-                ) : (
-                  bots.map((bot) => (
-                    <Card key={bot.id} className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={getPlatformIcon(bot.platform)} 
-                            alt={bot.platform} 
-                            className="w-6 h-6 object-contain"
-                          />
-                          <StatusIndicator 
-                            online={bot.status === 'online'} 
-                            className="w-3 h-3" 
-                          />
-                          <div>
-                            <div className="font-semibold text-foreground">
-                              {bot.nickname}
-                            </div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-2">
-                              <span className="capitalize">{bot.platform}</span>
-                              {bot.country && (
-                                <>
-                                  <span>•</span>
-                                  <span>{getCountryFlag(bot.country)} {bot.country}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Badge variant={bot.connected ? 'default' : 'secondary'}>
-                            {bot.connected ? 'Онлайн' : 'Оффлайн'}
-                          </Badge>
-                          
-                          <Button
-                            size="sm"
-                            variant={bot.connected ? 'destructive' : 'default'}
-                            onClick={() => bot.connected ? disconnectBot(bot.id) : connectBot(bot.id)}
-                          >
-                            {bot.connected ? 'Отключить' : 'Подключить'}
-                          </Button>
-                          
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => removeBot(bot.id)}
-                          >
-                            Удалить
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </div>
+          {/* Заказы */}
+          <TabsContent value="orders">
+            <OrderHistory />
           </TabsContent>
 
           {/* Аккаунт */}
@@ -418,7 +371,7 @@ const Index: React.FC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Баланс:</span>
-                    <span className="font-semibold">2,500 ₽</span>
+                    <span className="font-semibold">{profile?.balance?.toFixed(2) || '0.00'} ₽</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Активных ботов:</span>
@@ -429,20 +382,130 @@ const Index: React.FC = () => {
               
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Управление ботами
+                </h3>
+                <div className="flex gap-2 mb-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsProxyModalOpen(true)}
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Прокси
+                  </Button>
+                  <Button onClick={() => setIsAddBotModalOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Добавить бота
+                  </Button>
+                </div>
+
+                <div className="grid gap-4">
+                  {bots.length === 0 ? (
+                    <div className="p-8 text-center border border-dashed border-border rounded-lg">
+                      <div className="text-6xl mb-4">🤖</div>
+                      <h4 className="text-lg font-semibold text-foreground mb-2">
+                        Пока нет ботов
+                      </h4>
+                      <p className="text-muted-foreground mb-4">
+                        Добавьте первого бота для начала работы
+                      </p>
+                      <Button onClick={() => setIsAddBotModalOpen(true)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Добавить бота
+                      </Button>
+                    </div>
+                  ) : (
+                    bots.map((bot) => (
+                      <Card key={bot.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={getPlatformIcon(bot.platform)} 
+                              alt={bot.platform} 
+                              className="w-6 h-6 object-contain"
+                            />
+                            <StatusIndicator 
+                              online={bot.status === 'online'} 
+                              className="w-3 h-3" 
+                            />
+                            <div>
+                              <div className="font-semibold text-foreground">
+                                {bot.nickname}
+                              </div>
+                              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                <span className="capitalize">{bot.platform}</span>
+                                {bot.country && (
+                                  <>
+                                    <span>•</span>
+                                    <span>{getCountryFlag(bot.country)} {bot.country}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Badge variant={bot.connected ? 'default' : 'secondary'}>
+                              {bot.connected ? 'Онлайн' : 'Оффлайн'}
+                            </Badge>
+                            
+                            <Button
+                              size="sm"
+                              variant={bot.connected ? 'destructive' : 'default'}
+                              onClick={() => bot.connected ? disconnectBot(bot.id) : connectBot(bot.id)}
+                            >
+                              {bot.connected ? 'Отключить' : 'Подключить'}
+                            </Button>
+                            
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => removeBot(bot.id)}
+                            >
+                              Удалить
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </Card>
+              
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
                   Пополнить баланс
                 </h3>
                 <p className="text-muted-foreground mb-4">
                   Пополните баланс для заказа услуг
                 </p>
-                <Button className="w-full">
+                <Button className="w-full" onClick={() => setIsBalanceModalOpen(true)}>
                   <CreditCard className="w-4 h-4 mr-2" />
                   Пополнить баланс
                 </Button>
               </Card>
             </div>
           </TabsContent>
+
+          {/* Admin Panel */}
+          {isWorker && (
+            <TabsContent value="admin">
+              <AdminPanel />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
+
+      {/* Shopping Cart */}
+      <ShoppingCart
+        items={cartItems}
+        onUpdateQuantity={updateQuantity}
+        onUpdateDuration={updateDuration}
+        onRemoveItem={removeFromCart}
+        onClearCart={clearCart}
+        onCheckout={checkout}
+        isOpen={isCartOpen}
+        onClose={closeCart}
+      />
 
       {/* Модальные окна */}
       

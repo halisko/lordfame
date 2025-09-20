@@ -285,7 +285,7 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
                           size="sm"
                           onClick={() => onServiceSelect(service, selectedPlatformData.id)}
                         >
-                          Заказать
+                          В корзину
                         </Button>
                       </div>
                     </Card>

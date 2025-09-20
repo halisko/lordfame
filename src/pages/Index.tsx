@@ -1,12 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Navigate, Link } from "react-router-dom";
 import {
   Plus,
   Settings,
   CreditCard,
   ShoppingCart,
   Globe,
-  Crown
+  Crown,
+  LogOut,
+  Wallet,
+  History,
+  Timer
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -15,15 +20,20 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { GlassCard } from "@/components/GlassCard";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import { PlatformSelector } from "@/components/PlatformSelector";
 import { PaymentSystem } from "@/components/PaymentSystem";
 import { ProxyRecommendations } from "@/components/ProxyRecommendations";
+import { BalanceTopUp } from "@/components/BalanceTopUp";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useNotifications } from "@/components/NotificationSystem";
 import { useTwitchBot } from "@/hooks/useTwitchBot";
-import { Bot as BotType, Platform, PlatformService, PaymentMethod } from "@/types";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Bot as BotType, Platform, PlatformService } from "@/types";
 
 // Import platform icons
 import twitchIcon from '@/assets/icons/twitch.png';
@@ -53,14 +63,29 @@ const countries = [
   { code: 'JP', name: 'Япония', flag: '🇯🇵' }
 ];
 
+interface DatabasePaymentMethod {
+  id: string;
+  name: string;
+  description: string;
+  commission_percent: number;
+  enabled: boolean;
+  created_at: string;
+}
+
 const Index: React.FC = () => {
   const { addNotification } = useNotifications();
   const { bots, addBot, removeBot, connectBot, disconnectBot } = useTwitchBot();
+  const { user, profile, loading, signOut, isAuthenticated, isWorker } = useAuth();
+  
+  // States
+  const [paymentMethods, setPaymentMethods] = useState<DatabasePaymentMethod[]>([]);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
   
   // Modal states
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
   const [isProxyModalOpen, setIsProxyModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
   
   // Form states
   const [botForm, setBotForm] = useState({
@@ -76,6 +101,47 @@ const Index: React.FC = () => {
     service: PlatformService;
     platform: Platform;
   } | null>(null);
+
+  // Load payment methods
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('payment_methods')
+          .select('*')
+          .eq('enabled', true)
+          .order('commission_percent', { ascending: true });
+
+        if (error) {
+          console.error('Error loading payment methods:', error);
+        } else {
+          setPaymentMethods(data || []);
+        }
+      } catch (error) {
+        console.error('Error loading payment methods:', error);
+      } finally {
+        setLoadingPaymentMethods(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadPaymentMethods();
+    }
+  }, [isAuthenticated]);
+
+  // Redirect to auth if not authenticated
+  if (!loading && !isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   const handleAddBot = () => {
     const { nickname, token, platform, proxy, country } = botForm;
@@ -98,7 +164,7 @@ const Index: React.FC = () => {
     setIsPaymentModalOpen(true);
   };
 
-  const handlePayment = (method: PaymentMethod) => {
+  const handlePayment = (method: any) => {
     addNotification({
       type: 'success',
       title: 'Оплата успешна!',
@@ -134,6 +200,54 @@ const Index: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header with user info */}
+      <header className="border-b border-white/10 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+                WW-BOTS
+              </h1>
+              {isWorker && (
+                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400">
+                  <Crown className="w-3 h-3 mr-1" />
+                  Модератор
+                </Badge>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="text-gray-400">Привет,</span>
+                <span className="text-white font-medium">{profile?.username}</span>
+              </div>
+              
+              <div className="flex items-center space-x-2 bg-card/80 rounded-lg px-3 py-2">
+                <Wallet className="w-4 h-4 text-green-400" />
+                <span className="text-white font-medium">{profile?.balance?.toFixed(2) || '0.00'} ₽</span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsBalanceModalOpen(true)}
+                  className="ml-2 h-7 px-2"
+                >
+                  <Plus className="w-3 h-3" />
+                </Button>
+              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                className="text-gray-400 hover:text-white"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
@@ -531,6 +645,16 @@ const Index: React.FC = () => {
           </motion.div>
         </div>
       )}
+
+      {/* Balance Top-up Modal */}
+      <Dialog open={isBalanceModalOpen} onOpenChange={setIsBalanceModalOpen}>
+        <DialogContent className="max-w-2xl bg-transparent border-0 shadow-none p-0">
+          <BalanceTopUp 
+            onClose={() => setIsBalanceModalOpen(false)}
+            paymentMethods={paymentMethods}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

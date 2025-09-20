@@ -23,16 +23,16 @@ import {
 import twitchIcon from '@/assets/icons/twitch.png';
 import kickIcon from '@/assets/icons/kick.png';
 import youtubeIcon from '@/assets/icons/youtube.png';
-import trovoIcon from '@/assets/icons/trovo.png';
-import vkplayIcon from '@/assets/icons/vkplay.png';
-import dliveIcon from '@/assets/icons/dlive.png';
+import trovoIcon from '@/assets/icons/trovo.jpg';
+import vkplayIcon from '@/assets/icons/vkplay.jpg';
+import dliveIcon from '@/assets/icons/dlive.jpg';
 import telegramIcon from '@/assets/icons/telegram.png';
-import bigoIcon from '@/assets/icons/bigo.png';
-import bizon365Icon from '@/assets/icons/bizon365.png';
-import yappyIcon from '@/assets/icons/yappy.png';
+import bigoIcon from '@/assets/icons/bigo.jpg';
+import bizon365Icon from '@/assets/icons/bizon365.jpg';
+import yappyIcon from '@/assets/icons/yappy.jpg';
 import tiktokIcon from '@/assets/icons/tiktok.png';
-import rumbleIcon from '@/assets/icons/rumble.png';
-import zoomIcon from '@/assets/icons/zoom.png';
+import rumbleIcon from '@/assets/icons/rumble.jpg';
+import zoomIcon from '@/assets/icons/zoom.jpg';
 
 const platformsData: PlatformInfo[] = [
   {

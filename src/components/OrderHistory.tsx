@@ -41,7 +41,7 @@ interface OrderHistoryProps {
 }
 
 export const OrderHistory: React.FC<OrderHistoryProps> = ({ className }) => {
-  const { user, isWorker } = useAuth();
+  const { user, isModerator } = useAuth();
   const { toast } = useToast();
   
   const [orders, setOrders] = useState<Order[]>([]);
@@ -67,7 +67,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ className }) => {
         .order('created_at', { ascending: false });
 
       // Если не модератор, показываем только свои заказы
-      if (!isWorker) {
+      if (!isModerator) {
         query = query.eq('user_id', user.id);
       }
 

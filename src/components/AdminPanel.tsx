@@ -48,7 +48,7 @@ interface AdminPanelProps {
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ className }) => {
-  const { user, isWorker } = useAuth();
+  const { user, isModerator } = useAuth();
   const { toast } = useToast();
   
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -65,11 +65,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ className }) => {
   });
 
   useEffect(() => {
-    if (isWorker) {
+    if (isModerator) {
       loadUsers();
       loadOrders();
     }
-  }, [isWorker]);
+  }, [isModerator]);
 
   const loadUsers = async () => {
     try {
@@ -107,7 +107,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ className }) => {
         })
       );
 
-      setUsers(usersWithStats);
+      setUsers(usersWithStats as UserProfile[]);
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
@@ -266,7 +266,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ className }) => {
       .reduce((sum, order) => sum + order.price, 0);
   };
 
-  if (!isWorker) {
+  if (!isModerator) {
     return (
       <div className="flex items-center justify-center p-8">
         <Card className="p-6 text-center">

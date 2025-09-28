@@ -6,33 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Platform, PlatformInfo, PlatformService } from '@/types';
 import { 
-  Twitch, 
-  Youtube, 
-  MessageCircle, 
-  Video, 
   Users, 
   Heart, 
   Eye, 
-  ThumbsUp, 
-  Clock, 
   Star,
+  Film,
   Zap
 } from 'lucide-react';
 
 // Import platform icons
 import twitchIcon from '@/assets/icons/twitch.png';
-import kickIcon from '@/assets/icons/kick.png';
-import youtubeIcon from '@/assets/icons/youtube.png';
-import trovoIcon from '@/assets/icons/trovo.jpg';
-import vkplayIcon from '@/assets/icons/vkplay.jpg';
-import dliveIcon from '@/assets/icons/dlive.jpg';
-import telegramIcon from '@/assets/icons/telegram.png';
-import bigoIcon from '@/assets/icons/bigo.jpg';
-import bizon365Icon from '@/assets/icons/bizon365.jpg';
-import yappyIcon from '@/assets/icons/yappy.jpg';
-import tiktokIcon from '@/assets/icons/tiktok.png';
-import rumbleIcon from '@/assets/icons/rumble.jpg';
-import zoomIcon from '@/assets/icons/zoom.jpg';
 
 const platformsData: PlatformInfo[] = [
   {
@@ -45,130 +28,8 @@ const platformsData: PlatformInfo[] = [
       { id: 'twitch-followers', name: 'Twitch фолловеры', description: 'Новые подписчики', price: 50, currency: 'RUB', icon: '❤️' },
       { id: 'twitch-views', name: 'Twitch просмотры', description: 'Увеличение просмотров', price: 75, currency: 'RUB', icon: '👁️' },
       { id: 'twitch-bots', name: 'Twitch чат-боты', description: 'Активность в чате', price: 200, currency: 'RUB', icon: '🤖', popular: true },
-    ]
-  },
-  {
-    id: 'kick',
-    name: 'Kick',
-    icon: kickIcon,
-    color: 'bg-green-600',
-    services: [
-      { id: 'kick-viewers', name: 'Kick.com зрители', description: 'Увеличение зрителей', price: 90, currency: 'RUB', icon: '👥' },
-      { id: 'kick-bots', name: 'Kick.com чат-боты', description: 'Боты для чата', price: 180, currency: 'RUB', icon: '🤖' },
-      { id: 'kick-followers', name: 'Kick.com подписчики', description: 'Новые фолловеры', price: 45, currency: 'RUB', icon: '❤️' },
-      { id: 'kick-views', name: 'Kick.com просмотры', description: 'Увеличение просмотров', price: 70, currency: 'RUB', icon: '👁️' },
-    ]
-  },
-  {
-    id: 'youtube',
-    name: 'YouTube',
-    icon: youtubeIcon,
-    color: 'bg-red-600',
-    services: [
-      { id: 'yt-viewers', name: 'YouTube зрители', description: 'Зрители для стрима', price: 120, currency: 'RUB', icon: '👥' },
-      { id: 'yt-bots', name: 'YouTube чат-боты', description: 'Активность в чате', price: 220, currency: 'RUB', icon: '🤖' },
-      { id: 'yt-views', name: 'YouTube просмотры', description: 'Просмотры видео', price: 80, currency: 'RUB', icon: '👁️' },
-      { id: 'yt-subs', name: 'YouTube подписчики', description: 'Новые подписчики', price: 60, currency: 'RUB', icon: '❤️', popular: true },
-      { id: 'yt-likes', name: 'YouTube лайки', description: 'Лайки на видео', price: 30, currency: 'RUB', icon: '👍' },
-      { id: 'yt-comments', name: 'YouTube комментарии', description: 'Комментарии под видео', price: 40, currency: 'RUB', icon: '💬' },
-      { id: 'yt-hours', name: 'Часы просмотров', description: 'Накрутка времени просмотра', price: 150, currency: 'RUB', icon: '⏱️' },
-    ]
-  },
-  {
-    id: 'trovo',
-    name: 'Trovo',
-    icon: trovoIcon,
-    color: 'bg-blue-600',
-    services: [
-      { id: 'trovo-viewers', name: 'Trovo зрители', description: 'Увеличение зрителей', price: 85, currency: 'RUB', icon: '👥' },
-      { id: 'trovo-bots', name: 'Trovo чат-боты', description: 'Боты для чата', price: 170, currency: 'RUB', icon: '🤖' },
-      { id: 'trovo-followers', name: 'Trovo подписчики', description: 'Новые подписчики', price: 40, currency: 'RUB', icon: '❤️' },
-      { id: 'trovo-views', name: 'Trovo просмотры', description: 'Увеличение просмотров', price: 65, currency: 'RUB', icon: '👁️' },
-      { id: 'trovo-likes', name: 'Trovo лайки', description: 'Лайки на стрим', price: 25, currency: 'RUB', icon: '👍' },
-    ]
-  },
-  {
-    id: 'vkplay',
-    name: 'VKPlay',
-    icon: vkplayIcon,
-    color: 'bg-blue-500',
-    services: [
-      { id: 'vk-viewers', name: 'VKPlay зрители', description: 'Зрители для стрима', price: 95, currency: 'RUB', icon: '👥' },
-      { id: 'vk-views', name: 'VKPlay просмотры', description: 'Увеличение просмотров', price: 70, currency: 'RUB', icon: '👁️' },
-    ]
-  },
-  {
-    id: 'dlive',
-    name: 'DLive',
-    icon: dliveIcon,
-    color: 'bg-yellow-600',
-    services: [
-      { id: 'dlive-viewers', name: 'DLive зрители', description: 'Зрители для стрима', price: 110, currency: 'RUB', icon: '👥' },
-    ]
-  },
-  {
-    id: 'telegram',
-    name: 'Telegram',
-    icon: telegramIcon,
-    color: 'bg-cyan-500',
-    services: [
-      { id: 'tg-subs', name: 'Telegram подписчики', description: 'Подписчики на канал', price: 35, currency: 'RUB', icon: '❤️' },
-      { id: 'tg-views', name: 'Telegram просмотры', description: 'Просмотры постов', price: 20, currency: 'RUB', icon: '👁️' },
-    ]
-  },
-  {
-    id: 'bigo',
-    name: 'Bigo',
-    icon: bigoIcon,
-    color: 'bg-purple-500',
-    services: [
-      { id: 'bigo-viewers', name: 'Bigo зрители', description: 'Зрители для стрима', price: 105, currency: 'RUB', icon: '👥' },
-    ]
-  },
-  {
-    id: 'bizon365',
-    name: 'Bizon365',
-    icon: bizon365Icon,
-    color: 'bg-amber-600',
-    services: [
-      { id: 'bizon-viewers', name: 'Bizon365 зрители', description: 'Зрители для вебинара', price: 130, currency: 'RUB', icon: '👥' },
-    ]
-  },
-  {
-    id: 'yappy',
-    name: 'Yappy',
-    icon: yappyIcon,
-    color: 'bg-yellow-500',
-    services: [
-      { id: 'tiktok-viewers', name: 'TikTok зрители', description: 'Зрители для прямого эфира', price: 115, currency: 'RUB', icon: '👥' },
-    ]
-  },
-  {
-    id: 'tiktok',
-    name: 'TikTok',
-    icon: tiktokIcon,
-    color: 'bg-gray-800',
-    services: [
-      { id: 'tiktok-viewers', name: 'TikTok зрители', description: 'Зрители для прямого эфира', price: 115, currency: 'RUB', icon: '👥' },
-    ]
-  },
-  {
-    id: 'rumble',
-    name: 'Rumble',
-    icon: rumbleIcon,
-    color: 'bg-orange-600',
-    services: [
-      { id: 'rumble-viewers', name: 'Rumble зрители', description: 'Зрители для стрима', price: 100, currency: 'RUB', icon: '👥' },
-      { id: 'rumble-subs', name: 'Rumble подписчики', description: 'Новые подписчики', price: 55, currency: 'RUB', icon: '❤️' },
-    ]
-  },
-  {
-    id: 'zoom',
-    name: 'Zoom',
-    icon: zoomIcon,
-    color: 'bg-blue-400',
-    services: [
-      { id: 'zoom-viewers', name: 'Zoom зрители', description: 'Участники конференции', price: 140, currency: 'RUB', icon: '👥' },
+      { id: 'twitch-clip-views', name: 'Twitch клипы', description: 'Просмотры клипов', price: 90, currency: 'RUB', icon: '🎬' },
+      { id: 'twitch-channel-points', name: 'Twitch поинты', description: 'Активность поинтов канала', price: 130, currency: 'RUB', icon: '⭐' },
     ]
   }
 ];
@@ -178,124 +39,152 @@ interface PlatformSelectorProps {
   onServiceSelect: (service: PlatformService, platform: Platform) => void;
 }
 
-export const PlatformSelector: React.FC<PlatformSelectorProps> = ({ 
-  onPlatformSelect, 
-  onServiceSelect 
+export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
+  onPlatformSelect,
+  onServiceSelect,
 }) => {
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
-
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('twitch');
+  
   const handlePlatformClick = (platform: Platform) => {
-    setSelectedPlatform(selectedPlatform === platform ? null : platform);
+    setSelectedPlatform(platform);
     onPlatformSelect(platform);
+  };
+
+  const getServiceIcon = (service: PlatformService) => {
+    if (service.icon === '👥') return <Users className="w-4 h-4" />;
+    if (service.icon === '❤️') return <Heart className="w-4 h-4" />;
+    if (service.icon === '👁️') return <Eye className="w-4 h-4" />;
+    if (service.icon === '⭐') return <Star className="w-4 h-4" />;
+    if (service.icon === '🎬') return <Film className="w-4 h-4" />;
+    if (service.icon === '🤖') return <Zap className="w-4 h-4" />;
+    return <div className="w-4 h-4 text-center text-xs">{service.icon}</div>;
   };
 
   const selectedPlatformData = platformsData.find(p => p.id === selectedPlatform);
 
   return (
     <div className="space-y-6">
+      {/* Platform Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Выберите платформу</h2>
-        <p className="text-muted-foreground">Мы работаем со всеми популярными платформами</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">
+          Выберите услуги для Twitch
+        </h2>
+        <p className="text-muted-foreground">
+          Профессиональная накрутка активности для вашего Twitch канала
+        </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {platformsData.map((platform) => (
-          <motion.div
-            key={platform.id}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-              <Card
-                className={`p-4 cursor-pointer transition-all border-2 hover:shadow-lg ${
-                  selectedPlatform === platform.id
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-primary/50'
-                }`}
-                onClick={() => handlePlatformClick(platform.id)}
+      {/* Platform Card */}
+      <div className="max-w-4xl mx-auto">
+        <Card className="p-6 border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 rounded-lg bg-purple-600 flex items-center justify-center">
+              <img 
+                src={twitchIcon} 
+                alt="Twitch" 
+                className="w-8 h-8 object-contain"
+              />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-foreground">Twitch</h3>
+              <p className="text-muted-foreground">
+                Ведущая стриминговая платформа
+              </p>
+            </div>
+            <div className="ml-auto">
+              <Badge variant="secondary" className="bg-purple-500/20 text-purple-400">
+                6 услуг
+              </Badge>
+            </div>
+          </div>
+
+          {/* Services Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {selectedPlatformData?.services.map((service) => (
+              <motion.div
+                key={service.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <div className="text-center space-y-2">
-                  <div className="flex justify-center">
-                    <img 
-                      src={platform.icon} 
-                      alt={platform.name} 
-                      className="w-8 h-8 object-contain"
-                    />
+                <Card className="p-4 h-full cursor-pointer transition-all duration-200 hover:border-primary/50 hover:shadow-lg">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      {getServiceIcon(service)}
+                      {service.popular && (
+                        <Badge variant="secondary" className="text-xs bg-yellow-500/20 text-yellow-400">
+                          Популярно
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold text-primary">
+                        {service.price} ₽
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        за 24 часа
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium text-foreground">
-                    {platform.name}
+                  
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-foreground text-sm">
+                      {service.name}
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      {service.description}
+                    </p>
                   </div>
-                </div>
-              </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {selectedPlatformData && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card className="p-6">
-              <div className="mb-4">
-                <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
-                  <img 
-                    src={selectedPlatformData.icon} 
-                    alt={selectedPlatformData.name} 
-                    className="w-6 h-6 object-contain"
-                  />
-                  Услуги {selectedPlatformData.name}
-                </h3>
-                <Separator />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {selectedPlatformData.services.map((service) => (
-                  <motion.div
-                    key={service.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  
+                  <Separator className="my-3" />
+                  
+                  <Button
+                    onClick={() => onServiceSelect(service, selectedPlatform)}
+                    className="w-full"
+                    size="sm"
                   >
-                    <Card className="p-4 hover:shadow-md transition-all cursor-pointer border hover:border-primary/50">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="text-2xl">{service.icon}</div>
-                        {service.popular && (
-                          <Badge variant="default" className="text-xs">
-                            Популярное
-                          </Badge>
-                        )}
-                      </div>
-
-                      <h4 className="font-semibold text-foreground mb-2">
-                        {service.name}
-                      </h4>
-                      
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {service.description}
-                      </p>
-
-                      <div className="flex items-center justify-between">
-                        <div className="text-lg font-bold text-primary">
-                          {service.price} {service.currency}
-                        </div>
-                        
-                        <Button 
-                          size="sm"
-                          onClick={() => onServiceSelect(service, selectedPlatformData.id)}
-                        >
-                          В корзину
-                        </Button>
-                      </div>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    Добавить в корзину
+                  </Button>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </Card>
+      </div>
+      
+      {/* Features */}
+      <div className="max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-4 text-center">
+            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-2">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            </div>
+            <h4 className="font-medium text-foreground mb-1">Быстрый старт</h4>
+            <p className="text-xs text-muted-foreground">
+              Услуги активируются в течение 15 минут
+            </p>
+          </Card>
+          
+          <Card className="p-4 text-center">
+            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-2">
+              <Users className="w-4 h-4 text-blue-500" />
+            </div>
+            <h4 className="font-medium text-foreground mb-1">Качество</h4>
+            <p className="text-xs text-muted-foreground">
+              Только реальные аккаунты и активность
+            </p>
+          </Card>
+          
+          <Card className="p-4 text-center">
+            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-2">
+              <Zap className="w-4 h-4 text-purple-500" />
+            </div>
+            <h4 className="font-medium text-foreground mb-1">Поддержка 24/7</h4>
+            <p className="text-xs text-muted-foreground">
+              Всегда готовы помочь с вопросами
+            </p>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

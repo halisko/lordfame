@@ -32,7 +32,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ShoppingCart } from "@/components/ShoppingCart";
 import { OrderHistory } from "@/components/OrderHistory";
 import { ActiveOrders } from "@/components/ActiveOrders";
-import { AdminPanel } from "@/components/AdminPanel";
+import { ModeratorPanel } from "@/components/ModeratorPanel";
 import { useNotifications } from "@/components/NotificationSystem";
 import { useTwitchBot } from "@/hooks/useTwitchBot";
 import { useShoppingCart } from "@/hooks/useShoppingCart";
@@ -80,7 +80,7 @@ interface DatabasePaymentMethod {
 const Index: React.FC = () => {
   const { addNotification } = useNotifications();
   const { bots, addBot, removeBot, connectBot, disconnectBot } = useTwitchBot();
-  const { user, profile, loading, signOut, isAuthenticated, isWorker } = useAuth();
+  const { user, profile, loading, signOut, isAuthenticated, isModerator, getRoleDisplayName } = useAuth();
   const { 
     cartItems, 
     isCartOpen, 
@@ -225,10 +225,10 @@ const Index: React.FC = () => {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
                 WW-BOTS
               </h1>
-              {isWorker && (
+              {profile && profile.role !== 'user' && (
                 <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400">
                   <Crown className="w-3 h-3 mr-1" />
-                  Модератор
+                  {getRoleDisplayName(profile.role as any)}
                 </Badge>
               )}
             </div>
@@ -295,23 +295,23 @@ const Index: React.FC = () => {
               </h1>
               <Badge variant="secondary" className="ml-2">
                 <Crown className="w-3 h-3 mr-1" />
-                Pro
+                {getRoleDisplayName(profile?.role as any)}
               </Badge>
             </div>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Профессиональный сервис накрутки активности для всех популярных платформ.
-              Боты, зрители, подписчики и многое другое.
+              Профессиональный сервис накрутки активности для Twitch.
+              Боты, зрители, подписчики и многое другое для вашего канала.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <Badge variant="outline" className="px-4 py-2">
                 <Globe className="w-4 h-4 mr-2" />
-                13+ платформ
+                Twitch платформа
               </Badge>
               <Badge variant="outline" className="px-4 py-2">
                 <ShoppingCartIcon className="w-4 h-4 mr-2" />
-                30+ услуг
+                6+ услуг для Twitch
               </Badge>
               <Badge variant="outline" className="px-4 py-2">
                 <CreditCard className="w-4 h-4 mr-2" />
@@ -324,12 +324,12 @@ const Index: React.FC = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className={`grid w-full ${isWorker ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${isModerator ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="services">Услуги</TabsTrigger>
             <TabsTrigger value="active">Активные</TabsTrigger>
             <TabsTrigger value="orders">Заказы</TabsTrigger>
             <TabsTrigger value="account">Аккаунт</TabsTrigger>
-            {isWorker && <TabsTrigger value="admin">Админ</TabsTrigger>}
+            {isModerator && <TabsTrigger value="admin">Админ</TabsTrigger>}
           </TabsList>
 
           {/* Услуги */}
@@ -369,7 +369,7 @@ const Index: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Статус:</span>
-                    <Badge variant="default">Pro аккаунт</Badge>
+                    <Badge variant="default">{getRoleDisplayName(profile?.role as any)}</Badge>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Баланс:</span>
@@ -489,10 +489,10 @@ const Index: React.FC = () => {
           </TabsContent>
 
           {/* Admin Panel */}
-          {isWorker && (
-            <TabsContent value="admin">
-              <AdminPanel />
-            </TabsContent>
+          {isModerator && (
+          <TabsContent value="admin">
+            <ModeratorPanel />
+          </TabsContent>
           )}
         </Tabs>
       </div>

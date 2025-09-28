@@ -32,7 +32,7 @@ interface OrderTimer {
 }
 
 export const ActiveOrders: React.FC<ActiveOrdersProps> = ({ className }) => {
-  const { user, isWorker } = useAuth();
+  const { user, isModerator } = useAuth();
   const { toast } = useToast();
   
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
@@ -81,7 +81,7 @@ export const ActiveOrders: React.FC<ActiveOrdersProps> = ({ className }) => {
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-      if (!isWorker) {
+      if (!isModerator) {
         query = query.eq('user_id', user.id);
       }
 

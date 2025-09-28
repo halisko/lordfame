@@ -4,11 +4,11 @@ import { LoadingSpinner } from "./LoadingSpinner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireWorker?: boolean;
+  requireModerator?: boolean;
 }
 
-export const ProtectedRoute = ({ children, requireWorker = false }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading, profile } = useAuth();
+export const ProtectedRoute = ({ children, requireModerator = false }: ProtectedRouteProps) => {
+  const { isAuthenticated, loading, hasPermission } = useAuth();
 
   if (loading) {
     return (
@@ -22,7 +22,7 @@ export const ProtectedRoute = ({ children, requireWorker = false }: ProtectedRou
     return <Navigate to="/auth" replace />;
   }
 
-  if (requireWorker && profile?.role !== 'worker') {
+  if (requireModerator && !hasPermission('moderator')) {
     return <Navigate to="/" replace />;
   }
 

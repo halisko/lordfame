@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface UserProfile {
   id: string;
   username: string;
-  role: 'user' | 'worker';
+  role: 'chief' | 'moderator' | 'operator' | 'user' | 'worker'; // Include worker for backward compatibility
   balance: number;
   created_at: string;
   updated_at: string;
@@ -18,6 +18,31 @@ export const useAuth = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const getRoleDisplayName = (role: 'chief' | 'moderator' | 'operator' | 'user' | 'worker') => {
+    const roles = {
+      chief: 'Главный',
+      moderator: 'Модератор', 
+      operator: 'Оператор',
+      user: 'Пользователь',
+      worker: 'Модератор' // Legacy support
+    };
+    return roles[role];
+  };
+
+  const hasPermission = (requiredRole: 'chief' | 'moderator' | 'operator' | 'user') => {
+    if (!profile) return false;
+    
+    const roleHierarchy = {
+      chief: 4,
+      moderator: 3,
+      worker: 3, // Legacy support - same as moderator
+      operator: 2,
+      user: 1
+    };
+    
+    return roleHierarchy[profile.role as keyof typeof roleHierarchy] >= roleHierarchy[requiredRole];
+  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -234,7 +259,11 @@ export const useAuth = () => {
     signIn,
     signOut,
     updateProfile,
-    isWorker: profile?.role === 'worker',
+    getRoleDisplayName,
+    hasPermission,
+    isChief: profile?.role === 'chief',
+    isModerator: hasPermission('moderator'),
+    isOperator: hasPermission('operator'),
     isAuthenticated: !!user
   };
 };

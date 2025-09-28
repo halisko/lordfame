@@ -5,7 +5,7 @@ import {
   Plus,
   Settings,
   CreditCard,
-  ShoppingCart,
+  ShoppingCart as ShoppingCartIcon,
   Globe,
   Crown,
   LogOut,
@@ -248,7 +248,7 @@ const Index: React.FC = () => {
                   onClick={openCart}
                   className="relative"
                 >
-                  <ShoppingCart className="w-4 h-4" />
+                  <ShoppingCartIcon className="w-4 h-4" />
                   {cartItems.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {cartItems.length}
@@ -310,7 +310,7 @@ const Index: React.FC = () => {
                 13+ платформ
               </Badge>
               <Badge variant="outline" className="px-4 py-2">
-                <ShoppingCart className="w-4 h-4 mr-2" />
+                <ShoppingCartIcon className="w-4 h-4 mr-2" />
                 30+ услуг
               </Badge>
               <Badge variant="outline" className="px-4 py-2">
@@ -338,10 +338,12 @@ const Index: React.FC = () => {
               <PlatformSelector
                 onPlatformSelect={() => {}}
                 onServiceSelect={(service, platform) => {
-                  const platformData = platformsData.find(p => p.id === platform);
-                  if (platformData) {
-                    addToCart(service, platform, platformData.icon);
-                  }
+                  const platformData = {
+                    id: 'twitch',
+                    name: 'Twitch',
+                    icon: twitchIcon
+                  };
+                  addToCart(service, platform, platformData.icon);
                 }}
               />
             </div>

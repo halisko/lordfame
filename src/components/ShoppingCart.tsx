@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  ShoppingCart, 
+  ShoppingCart as ShoppingCartIcon, 
   Trash2, 
   Plus, 
   Minus, 
@@ -120,7 +120,7 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5 text-primary" />
+                  <ShoppingCartIcon className="w-5 h-5 text-primary" />
                   <h2 className="text-lg font-semibold">Корзина</h2>
                   {items.length > 0 && (
                     <Badge variant="secondary">{items.length}</Badge>
@@ -135,7 +135,7 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
               <div className="flex-1 overflow-y-auto p-4">
                 {items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
-                    <ShoppingCart className="w-16 h-16 text-muted-foreground mb-4" />
+                    <ShoppingCartIcon className="w-16 h-16 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium text-foreground mb-2">
                       Корзина пуста
                     </h3>

@@ -11,7 +11,10 @@ import {
   LogOut,
   Wallet,
   History,
-  Timer
+  Timer,
+  MessageSquare,
+  Shield,
+  Bell
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +36,10 @@ import { ShoppingCart } from "@/components/ShoppingCart";
 import { OrderHistory } from "@/components/OrderHistory";
 import { ActiveOrders } from "@/components/ActiveOrders";
 import { ModeratorPanel } from "@/components/ModeratorPanel";
+import { DeviceSwitch } from "@/components/DeviceSwitch";
+import { TwitchBotCommands } from "@/components/twitch/TwitchBotCommands";
+import { TwitchModeration } from "@/components/twitch/TwitchModeration";
+import { TwitchAlerts } from "@/components/twitch/TwitchAlerts";
 import { useNotifications } from "@/components/NotificationSystem";
 import { useTwitchBot } from "@/hooks/useTwitchBot";
 import { useShoppingCart } from "@/hooks/useShoppingCart";
@@ -231,6 +238,7 @@ const Index: React.FC = () => {
                   {getRoleDisplayName(profile.role as any)}
                 </Badge>
               )}
+              <DeviceSwitch />
             </div>
             
             <div className="flex items-center space-x-4">
@@ -324,8 +332,20 @@ const Index: React.FC = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className={`grid w-full ${isModerator ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${isModerator ? 'grid-cols-8' : 'grid-cols-7'}`}>
             <TabsTrigger value="services">Услуги</TabsTrigger>
+            <TabsTrigger value="commands">
+              <MessageSquare className="w-4 h-4 mr-1" />
+              Команды
+            </TabsTrigger>
+            <TabsTrigger value="moderation">
+              <Shield className="w-4 h-4 mr-1" />
+              Модерация
+            </TabsTrigger>
+            <TabsTrigger value="alerts">
+              <Bell className="w-4 h-4 mr-1" />
+              Алерты
+            </TabsTrigger>
             <TabsTrigger value="active">Активные</TabsTrigger>
             <TabsTrigger value="orders">Заказы</TabsTrigger>
             <TabsTrigger value="account">Аккаунт</TabsTrigger>
@@ -347,6 +367,21 @@ const Index: React.FC = () => {
                 }}
               />
             </div>
+          </TabsContent>
+
+          {/* Команды бота */}
+          <TabsContent value="commands">
+            <TwitchBotCommands />
+          </TabsContent>
+
+          {/* Модерация */}
+          <TabsContent value="moderation">
+            <TwitchModeration />
+          </TabsContent>
+
+          {/* Алерты */}
+          <TabsContent value="alerts">
+            <TwitchAlerts />
           </TabsContent>
 
           {/* Активные заказы */}

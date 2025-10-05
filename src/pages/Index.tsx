@@ -48,6 +48,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Bot as BotType, Platform, PlatformService } from "@/types";
 
 // Import platform icons
+import lordLogo from '@/assets/lord-logo.png';
 import twitchIcon from '@/assets/icons/twitch.png';
 import kickIcon from '@/assets/icons/kick.png';
 import youtubeIcon from '@/assets/icons/youtube.png';
@@ -229,9 +230,7 @@ const Index: React.FC = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-                WW-BOTS
-              </h1>
+              <img src={lordLogo} alt="LordFame" className="h-10 w-auto" />
               {profile && profile.role !== 'user' && (
                 <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400">
                   <Crown className="w-3 h-3 mr-1" />
@@ -297,10 +296,7 @@ const Index: React.FC = () => {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="text-6xl">🤖</div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
-                wwbots
-              </h1>
+              <img src={lordLogo} alt="LordFame" className="h-20 w-auto" />
               <Badge variant="secondary" className="ml-2">
                 <Crown className="w-3 h-3 mr-1" />
                 {getRoleDisplayName(profile?.role as any)}

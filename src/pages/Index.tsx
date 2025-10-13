@@ -4,13 +4,9 @@ import { Navigate, Link } from "react-router-dom";
 import {
   Plus,
   Settings,
-  CreditCard,
-  ShoppingCart as ShoppingCartIcon,
   Globe,
   Crown,
   LogOut,
-  Wallet,
-  History,
   Timer,
   MessageSquare,
   Shield,
@@ -27,14 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 import { GlassCard } from "@/components/GlassCard";
 import { StatusIndicator } from "@/components/StatusIndicator";
-import { PlatformSelector } from "@/components/PlatformSelector";
-import { PaymentSystem } from "@/components/PaymentSystem";
-import { ProxyRecommendations } from "@/components/ProxyRecommendations";
-import { BalanceTopUp } from "@/components/BalanceTopUp";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { ShoppingCart } from "@/components/ShoppingCart";
-import { OrderHistory } from "@/components/OrderHistory";
-import { ActiveOrders } from "@/components/ActiveOrders";
 import { ModeratorPanel } from "@/components/ModeratorPanel";
 import { DeviceSwitch } from "@/components/DeviceSwitch";
 import { TwitchBotCommands } from "@/components/twitch/TwitchBotCommands";
@@ -42,10 +31,8 @@ import { TwitchModeration } from "@/components/twitch/TwitchModeration";
 import { TwitchAlerts } from "@/components/twitch/TwitchAlerts";
 import { useNotifications } from "@/components/NotificationSystem";
 import { useTwitchBot } from "@/hooks/useTwitchBot";
-import { useShoppingCart } from "@/hooks/useShoppingCart";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { Bot as BotType, Platform, PlatformService } from "@/types";
+import { Bot as BotType, Platform } from "@/types";
 
 // Import platform icons
 import lordLogo from '@/assets/lord-logo.png';
@@ -76,41 +63,13 @@ const countries = [
   { code: 'JP', name: 'Япония', flag: '🇯🇵' }
 ];
 
-interface DatabasePaymentMethod {
-  id: string;
-  name: string;
-  description: string;
-  commission_percent: number;
-  enabled: boolean;
-  created_at: string;
-}
-
 const Index: React.FC = () => {
   const { addNotification } = useNotifications();
   const { bots, addBot, removeBot, connectBot, disconnectBot } = useTwitchBot();
   const { user, profile, loading, signOut, isAuthenticated, isModerator, getRoleDisplayName } = useAuth();
-  const { 
-    cartItems, 
-    isCartOpen, 
-    addToCart, 
-    updateQuantity, 
-    updateDuration, 
-    removeFromCart, 
-    clearCart, 
-    checkout, 
-    openCart, 
-    closeCart 
-  } = useShoppingCart();
-  
-  // States
-  const [paymentMethods, setPaymentMethods] = useState<DatabasePaymentMethod[]>([]);
-  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
   
   // Modal states
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
-  const [isProxyModalOpen, setIsProxyModalOpen] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
   
   // Form states
   const [botForm, setBotForm] = useState({
@@ -120,39 +79,6 @@ const Index: React.FC = () => {
     proxy: '',
     country: 'RU'
   });
-  
-  // Payment state
-  const [selectedService, setSelectedService] = useState<{
-    service: PlatformService;
-    platform: Platform;
-  } | null>(null);
-
-  // Load payment methods
-  useEffect(() => {
-    const loadPaymentMethods = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('payment_methods')
-          .select('*')
-          .eq('enabled', true)
-          .order('commission_percent', { ascending: true });
-
-        if (error) {
-          console.error('Error loading payment methods:', error);
-        } else {
-          setPaymentMethods(data || []);
-        }
-      } catch (error) {
-        console.error('Error loading payment methods:', error);
-      } finally {
-        setLoadingPaymentMethods(false);
-      }
-    };
-
-    if (isAuthenticated) {
-      loadPaymentMethods();
-    }
-  }, [isAuthenticated]);
 
   // Redirect to auth if not authenticated
   if (!loading && !isAuthenticated) {
@@ -182,21 +108,6 @@ const Index: React.FC = () => {
       country: 'RU'
     });
     setIsAddBotModalOpen(false);
-  };
-
-  const handleServiceSelect = (service: PlatformService, platform: Platform) => {
-    setSelectedService({ service, platform });
-    setIsPaymentModalOpen(true);
-  };
-
-  const handlePayment = (method: any) => {
-    addNotification({
-      type: 'success',
-      title: 'Оплата успешна!',
-      message: `Заказ "${selectedService?.service.name}" оплачен через ${method.name}`
-    });
-    setIsPaymentModalOpen(false);
-    setSelectedService(null);
   };
 
   const getCountryFlag = (countryName?: string) => {
@@ -242,34 +153,8 @@ const Index: React.FC = () => {
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-sm">
-                <span className="text-gray-400">Привет,</span>
+                <span className="text-gray-400">Пользователь:</span>
                 <span className="text-white font-medium">{profile?.username}</span>
-              </div>
-              
-              <div className="flex items-center space-x-2 bg-card/80 rounded-lg px-3 py-2">
-                <Wallet className="w-4 h-4 text-green-400" />
-                <span className="text-white font-medium">{profile?.balance?.toFixed(2) || '0.00'} ₽</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={openCart}
-                  className="relative"
-                >
-                  <ShoppingCartIcon className="w-4 h-4" />
-                  {cartItems.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartItems.length}
-                    </span>
-                  )}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsBalanceModalOpen(true)}
-                  className="h-7 px-2"
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
               </div>
               
               <Button
@@ -304,32 +189,16 @@ const Index: React.FC = () => {
             </div>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Профессиональный сервис накрутки активности для Twitch.
-              Боты, зрители, подписчики и многое другое для вашего канала.
+              Закрытый сервис управления ботами для стриминговых платформ
             </p>
-            
-            <div className="flex flex-wrap justify-center gap-4 mt-8">
-              <Badge variant="outline" className="px-4 py-2">
-                <Globe className="w-4 h-4 mr-2" />
-                Twitch платформа
-              </Badge>
-              <Badge variant="outline" className="px-4 py-2">
-                <ShoppingCartIcon className="w-4 h-4 mr-2" />
-                6+ услуг для Twitch
-              </Badge>
-              <Badge variant="outline" className="px-4 py-2">
-                <CreditCard className="w-4 h-4 mr-2" />
-                Безопасная оплата
-              </Badge>
-            </div>
           </motion.div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="services" className="w-full">
-          <TabsList className={`grid w-full ${isModerator ? 'grid-cols-8' : 'grid-cols-7'}`}>
-            <TabsTrigger value="services">Услуги</TabsTrigger>
+        <Tabs defaultValue="bots" className="w-full">
+          <TabsList className={`grid w-full ${isModerator ? 'grid-cols-5' : 'grid-cols-4'}`}>
+            <TabsTrigger value="bots">Боты</TabsTrigger>
             <TabsTrigger value="commands">
               <MessageSquare className="w-4 h-4 mr-1" />
               Команды
@@ -342,89 +211,17 @@ const Index: React.FC = () => {
               <Bell className="w-4 h-4 mr-1" />
               Алерты
             </TabsTrigger>
-            <TabsTrigger value="active">Активные</TabsTrigger>
-            <TabsTrigger value="orders">Заказы</TabsTrigger>
-            <TabsTrigger value="account">Аккаунт</TabsTrigger>
             {isModerator && <TabsTrigger value="admin">Админ</TabsTrigger>}
           </TabsList>
 
-          {/* Услуги */}
-          <TabsContent value="services">
-            <div className="space-y-8">
-              <PlatformSelector
-                onPlatformSelect={() => {}}
-                onServiceSelect={(service, platform) => {
-                  const platformData = {
-                    id: 'twitch',
-                    name: 'Twitch',
-                    icon: twitchIcon
-                  };
-                  addToCart(service, platform, platformData.icon);
-                }}
-              />
-            </div>
-          </TabsContent>
-
-          {/* Команды бота */}
-          <TabsContent value="commands">
-            <TwitchBotCommands />
-          </TabsContent>
-
-          {/* Модерация */}
-          <TabsContent value="moderation">
-            <TwitchModeration />
-          </TabsContent>
-
-          {/* Алерты */}
-          <TabsContent value="alerts">
-            <TwitchAlerts />
-          </TabsContent>
-
-          {/* Активные заказы */}
-          <TabsContent value="active">
-            <ActiveOrders />
-          </TabsContent>
-
-          {/* Заказы */}
-          <TabsContent value="orders">
-            <OrderHistory />
-          </TabsContent>
-
-          {/* Аккаунт */}
-          <TabsContent value="account">
+          {/* Боты */}
+          <TabsContent value="bots">
             <div className="space-y-6">
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
-                  Информация об аккаунте
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Статус:</span>
-                    <Badge variant="default">{getRoleDisplayName(profile?.role as any)}</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Баланс:</span>
-                    <span className="font-semibold">{profile?.balance?.toFixed(2) || '0.00'} ₽</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Активных ботов:</span>
-                    <span className="font-semibold">{bots.filter(b => b.connected).length}</span>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
-                  Управление ботами
-                </h3>
-                <div className="flex gap-2 mb-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsProxyModalOpen(true)}
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Прокси
-                  </Button>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Управление ботами
+                  </h3>
                   <Button onClick={() => setIsAddBotModalOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Добавить бота
@@ -503,21 +300,24 @@ const Index: React.FC = () => {
                   )}
                 </div>
               </Card>
-              
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
-                  Пополнить баланс
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Пополните баланс для заказа услуг
-                </p>
-                <Button className="w-full" onClick={() => setIsBalanceModalOpen(true)}>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Пополнить баланс
-                </Button>
-              </Card>
             </div>
           </TabsContent>
+
+          {/* Команды бота */}
+          <TabsContent value="commands">
+            <TwitchBotCommands />
+          </TabsContent>
+
+          {/* Модерация */}
+          <TabsContent value="moderation">
+            <TwitchModeration />
+          </TabsContent>
+
+          {/* Алерты */}
+          <TabsContent value="alerts">
+            <TwitchAlerts />
+          </TabsContent>
+
 
           {/* Admin Panel */}
           {isModerator && (
@@ -527,18 +327,6 @@ const Index: React.FC = () => {
           )}
         </Tabs>
       </div>
-
-      {/* Shopping Cart */}
-      <ShoppingCart
-        items={cartItems}
-        onUpdateQuantity={updateQuantity}
-        onUpdateDuration={updateDuration}
-        onRemoveItem={removeFromCart}
-        onClearCart={clearCart}
-        onCheckout={checkout}
-        isOpen={isCartOpen}
-        onClose={closeCart}
-      />
 
       {/* Модальные окна */}
       
@@ -676,81 +464,6 @@ const Index: React.FC = () => {
         </div>
       )}
 
-      {/* Прокси рекомендации */}
-      {isProxyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-full max-w-2xl"
-          >
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-foreground">Рекомендации прокси</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setIsProxyModalOpen(false)}
-                >
-                  ×
-                </Button>
-              </div>
-              
-              <ProxyRecommendations />
-              
-              <div className="flex justify-end pt-4">
-                <Button onClick={() => setIsProxyModalOpen(false)}>
-                  Закрыть
-                </Button>
-              </div>
-            </Card>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Оплата */}
-      {isPaymentModalOpen && selectedService && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-full max-w-2xl"
-          >
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-foreground">Оплата услуги</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    setIsPaymentModalOpen(false);
-                    setSelectedService(null);
-                  }}
-                >
-                  ×
-                </Button>
-              </div>
-              
-              <PaymentSystem
-                amount={selectedService.service.price}
-                currency={selectedService.service.currency}
-                serviceName={selectedService.service.name}
-                onPayment={handlePayment}
-              />
-            </Card>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Balance Top-up Modal */}
-      <Dialog open={isBalanceModalOpen} onOpenChange={setIsBalanceModalOpen}>
-        <DialogContent className="max-w-2xl bg-transparent border-0 shadow-none p-0">
-          <BalanceTopUp 
-            onClose={() => setIsBalanceModalOpen(false)}
-            paymentMethods={paymentMethods}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

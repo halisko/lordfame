@@ -5,23 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GlassCard } from "@/components/GlassCard";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useAuth } from "@/hooks/useAuth";
 import gamingBg from "@/assets/twitch-hero-bg.jpg";
+import lordLogo from '@/assets/lord-logo.png';
 
 const Auth = () => {
-  const { signIn, signUp, loading, isAuthenticated } = useAuth();
+  const { signIn, loading, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [signInForm, setSignInForm] = useState({
     email: "",
     password: ""
-  });
-  const [signUpForm, setSignUpForm] = useState({
-    email: "",
-    password: "",
-    username: ""
   });
 
   // Redirect if already authenticated
@@ -33,13 +28,6 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     await signIn(signInForm.email, signInForm.password);
-    setIsLoading(false);
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    await signUp(signUpForm.email, signUpForm.password, signUpForm.username);
     setIsLoading(false);
   };
 
@@ -66,105 +54,48 @@ const Auth = () => {
       >
         <GlassCard>
           <Card className="border-0 bg-transparent shadow-none">
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-                WW-BOTS
-              </CardTitle>
+            <CardHeader className="text-center space-y-4">
+              <div className="flex justify-center">
+                <img src={lordLogo} alt="LordFame" className="h-16 w-auto" />
+              </div>
               <CardDescription className="text-gray-300">
-                Управление ботами для стриминговых платформ
+                Закрытый сервис управления ботами
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="signin">Вход</TabsTrigger>
-                  <TabsTrigger value="signup">Регистрация</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="signin" className="space-y-4">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-email">Email</Label>
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={signInForm.email}
-                        onChange={(e) => setSignInForm({ ...signInForm, email: e.target.value })}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-password">Пароль</Label>
-                      <Input
-                        id="signin-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={signInForm.password}
-                        onChange={(e) => setSignInForm({ ...signInForm, password: e.target.value })}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={isLoading}
-                    >
-                      {isLoading ? <LoadingSpinner /> : "Войти"}
-                    </Button>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="signup" className="space-y-4">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-username">Имя пользователя</Label>
-                      <Input
-                        id="signup-username"
-                        type="text"
-                        placeholder="username"
-                        value={signUpForm.username}
-                        onChange={(e) => setSignUpForm({ ...signUpForm, username: e.target.value })}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={signUpForm.email}
-                        onChange={(e) => setSignUpForm({ ...signUpForm, email: e.target.value })}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Пароль</Label>
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={signUpForm.password}
-                        onChange={(e) => setSignUpForm({ ...signUpForm, password: e.target.value })}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={isLoading}
-                    >
-                      {isLoading ? <LoadingSpinner /> : "Зарегистрироваться"}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={signInForm.email}
+                    onChange={(e) => setSignInForm({ ...signInForm, email: e.target.value })}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Пароль</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={signInForm.password}
+                    onChange={(e) => setSignInForm({ ...signInForm, password: e.target.value })}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? <LoadingSpinner /> : "Войти"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </GlassCard>

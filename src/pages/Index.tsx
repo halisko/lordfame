@@ -108,36 +108,50 @@ const Index: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
               <img src={lordLogo} alt="LordFame" className="h-8 w-auto" />
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
-                <TabsList className="bg-transparent border-0 h-auto p-0">
-                  <TabsTrigger 
-                    value="main" 
-                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
+              <div className="flex gap-0">
+                <button
+                  onClick={() => setActiveTab('main')}
+                  className={`px-4 py-2 transition-colors ${
+                    activeTab === 'main'
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Главная
+                </button>
+                <button
+                  onClick={() => setActiveTab('chat')}
+                  className={`px-4 py-2 transition-colors ${
+                    activeTab === 'chat'
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Чат
+                </button>
+                <button
+                  onClick={() => setActiveTab('templates')}
+                  className={`px-4 py-2 transition-colors ${
+                    activeTab === 'templates'
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Шаблоны
+                </button>
+                {isModerator && (
+                  <button
+                    onClick={() => setActiveTab('admin')}
+                    className={`px-4 py-2 transition-colors ${
+                      activeTab === 'admin'
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
                   >
-                    Главная
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="chat" 
-                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-                  >
-                    Чат
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="templates" 
-                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-                  >
-                    Шаблоны
-                  </TabsTrigger>
-                  {isModerator && (
-                    <TabsTrigger 
-                      value="admin" 
-                      className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4"
-                    >
-                      Админ
-                    </TabsTrigger>
-                  )}
-                </TabsList>
-              </Tabs>
+                    Админ
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -158,8 +172,7 @@ const Index: React.FC = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-4">
-        <Tabs value={activeTab} className="w-full">
-          <TabsContent value="chat" className="m-0">
+        {activeTab === 'chat' && (
             <div className="grid grid-cols-12 gap-4 h-[calc(100vh-120px)]">
               {/* Left Sidebar - Chat */}
               <div className="col-span-3">
@@ -398,9 +411,9 @@ const Index: React.FC = () => {
                 </Card>
               </div>
             </div>
-          </TabsContent>
+        )}
 
-          <TabsContent value="main">
+        {activeTab === 'main' && (
             <div className="max-w-4xl mx-auto space-y-6">
               <Card className="bg-white/5 border-white/10 p-6">
                 <h3 className="text-xl font-semibold mb-4">Добавить стример</h3>
@@ -490,9 +503,9 @@ const Index: React.FC = () => {
                 </div>
               </Card>
             </div>
-          </TabsContent>
+        )}
 
-          <TabsContent value="templates">
+        {activeTab === 'templates' && (
             <div className="max-w-6xl mx-auto">
               <Card className="bg-white/5 border-white/10 p-6">
                 <h3 className="text-xl font-semibold mb-4">Категории ботов</h3>
@@ -564,14 +577,11 @@ const Index: React.FC = () => {
                 )}
               </Card>
             </div>
-          </TabsContent>
+        )}
 
-          {isModerator && (
-            <TabsContent value="admin">
-              <ModeratorPanel />
-            </TabsContent>
-          )}
-        </Tabs>
+        {isModerator && activeTab === 'admin' && (
+          <ModeratorPanel />
+        )}
       </div>
     </div>
   );

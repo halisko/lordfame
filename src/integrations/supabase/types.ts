@@ -59,8 +59,30 @@ export type Database = {
           },
         ]
       }
+      bot_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       bots: {
         Row: {
+          category_id: string | null
           connected: boolean
           country: string | null
           created_at: string
@@ -74,6 +96,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category_id?: string | null
           connected?: boolean
           country?: string | null
           created_at?: string
@@ -87,6 +110,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category_id?: string | null
           connected?: boolean
           country?: string | null
           created_at?: string
@@ -100,6 +124,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bots_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "bot_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bots_user_id_fkey"
             columns: ["user_id"]
@@ -210,6 +241,36 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      streamers: {
+        Row: {
+          created_at: string
+          id: string
+          is_live: boolean
+          stream_url: string
+          streamer_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_live?: boolean
+          stream_url: string
+          streamer_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_live?: boolean
+          stream_url?: string
+          streamer_name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

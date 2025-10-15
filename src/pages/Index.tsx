@@ -9,7 +9,9 @@ import {
   UserMinus,
   Heart,
   ChevronDown,
-  Settings
+  Settings,
+  Trash2,
+  Radio
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +26,8 @@ import { Slider } from "@/components/ui/slider";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ModeratorPanel } from "@/components/ModeratorPanel";
 import { useAuth } from "@/hooks/useAuth";
+import { useStreamers } from "@/hooks/useStreamers";
+import { useBotCategories } from "@/hooks/useBotCategories";
 
 import lordLogo from '@/assets/lord-logo.png';
 
@@ -36,7 +40,11 @@ interface ChatMessage {
 
 const Index: React.FC = () => {
   const { profile, loading, signOut, isAuthenticated, isModerator } = useAuth();
+  const { streamers, addStreamer, removeStreamer, refreshStreamers } = useStreamers();
+  const { categories, categoryBots, selectedCategory, setSelectedCategory } = useBotCategories();
   
+  const [streamerUrl, setStreamerUrl] = useState('');
+  const [streamerName, setStreamerName] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { id: '1', username: 'haitako57', message: 'спасибо', timestamp: '19:35' },
     { id: '2', username: 'haitako57', message: 'не смотри канал у 18 аудиторию', timestamp: '19:36' },
@@ -78,6 +86,18 @@ const Index: React.FC = () => {
       setChatMessages([...chatMessages, newMessage]);
       setMessageInput('');
     }
+  };
+
+  const handleAddStreamer = async () => {
+    if (streamerUrl && streamerName) {
+      await addStreamer(streamerUrl, streamerName);
+      setStreamerUrl('');
+      setStreamerName('');
+    }
+  };
+
+  const connectToStream = (streamerId: string) => {
+    setActiveTab('chat');
   };
 
   return (
@@ -381,16 +401,168 @@ const Index: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="main">
-            <div className="text-center py-20">
-              <h2 className="text-2xl font-bold mb-4">Главная</h2>
-              <p className="text-gray-400">Раздел в разработке</p>
+            <div className="max-w-4xl mx-auto space-y-6">
+              <Card className="bg-white/5 border-white/10 p-6">
+                <h3 className="text-xl font-semibold mb-4">Добавить стример</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-400 mb-2 block">Ссылка на аккаунт</label>
+                    <Input
+                      placeholder="https://twitch.tv/username"
+                      value={streamerUrl}
+                      onChange={(e) => setStreamerUrl(e.target.value)}
+                      className="bg-white/5 border-white/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400 mb-2 block">Имя стримера</label>
+                    <Input
+                      placeholder="username"
+                      value={streamerName}
+                      onChange={(e) => setStreamerName(e.target.value)}
+                      className="bg-white/5 border-white/10"
+                    />
+                  </div>
+                  <Button onClick={handleAddStreamer} className="w-full bg-primary">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Добавить
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className="bg-white/5 border-white/10 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">Список стримеров</h3>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={refreshStreamers}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {streamers.length === 0 ? (
+                    <p className="text-center text-gray-400 py-8">Нет добавленных стримеров</p>
+                  ) : (
+                    streamers.map((streamer) => (
+                      <div 
+                        key={streamer.id} 
+                        className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium">{streamer.streamer_name}</span>
+                            <div className="flex items-center gap-1">
+                              {streamer.is_live ? (
+                                <>
+                                  <Radio className="w-3 h-3 text-red-500 animate-pulse" />
+                                  <span className="text-xs text-red-500">В эфире</span>
+                                </>
+                              ) : (
+                                <span className="text-xs text-gray-500">Оффлайн</span>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-400">{streamer.stream_url}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => connectToStream(streamer.id)}
+                            className="bg-primary"
+                          >
+                            Подключиться
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => removeStreamer(streamer.id)}
+                            className="text-red-400 hover:text-red-300"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="templates">
-            <div className="text-center py-20">
-              <h2 className="text-2xl font-bold mb-4">Шаблоны</h2>
-              <p className="text-gray-400">Раздел в разработке</p>
+            <div className="max-w-6xl mx-auto">
+              <Card className="bg-white/5 border-white/10 p-6">
+                <h3 className="text-xl font-semibold mb-4">Категории ботов</h3>
+                <Tabs value={selectedCategory || undefined} onValueChange={setSelectedCategory}>
+                  <TabsList className="bg-white/5 border-white/10 w-full justify-start">
+                    {categories.map((category) => (
+                      <TabsTrigger 
+                        key={category.id} 
+                        value={category.id}
+                        className="data-[state=active]:bg-primary"
+                      >
+                        {category.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {categories.map((category) => (
+                    <TabsContent key={category.id} value={category.id} className="mt-6">
+                      <div className="space-y-4">
+                        <p className="text-gray-400 mb-4">{category.description}</p>
+                        
+                        {categoryBots.length === 0 ? (
+                          <Card className="bg-white/5 border-white/10 p-8 text-center">
+                            <p className="text-gray-400">Нет ботов в этой категории</p>
+                          </Card>
+                        ) : (
+                          <div className="grid gap-3">
+                            {categoryBots.map((bot) => (
+                              <Card key={bot.id} className="bg-white/5 border-white/10 p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <span className="font-medium">{bot.nickname}</span>
+                                      <span className={`text-xs px-2 py-1 rounded ${
+                                        bot.connected 
+                                          ? 'bg-green-500/20 text-green-400' 
+                                          : 'bg-gray-500/20 text-gray-400'
+                                      }`}>
+                                        {bot.status}
+                                      </span>
+                                      <span className="text-xs text-gray-500">{bot.platform}</span>
+                                    </div>
+                                    <div className="flex gap-4 text-sm text-gray-400">
+                                      {bot.country && (
+                                        <span>Страна: {bot.country}</span>
+                                      )}
+                                      {bot.proxy && (
+                                        <span>Прокси: {bot.proxy}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    Cookie токен: {bot.token.substring(0, 20)}...
+                                  </div>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+
+                {!selectedCategory && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-400">Выберите категорию для просмотра ботов</p>
+                  </div>
+                )}
+              </Card>
             </div>
           </TabsContent>
 

@@ -94,6 +94,70 @@ export const useStreamers = () => {
     }
   };
 
+  const checkStreamerStatus = async (streamUrl: string): Promise<boolean> => {
+    try {
+      // Простая проверка для Twitch
+      if (streamUrl.includes('twitch.tv')) {
+        const username = streamUrl.split('/').pop() || '';
+        const response = await fetch(`https://www.twitch.tv/${username}`);
+        const html = await response.text();
+        return html.includes('"isLiveBroadcast":true') || html.includes('isLiveBroadcast');
+      }
+      
+      // Простая проверка для YouTube
+      if (streamUrl.includes('youtube.com')) {
+        const response = await fetch(streamUrl);
+        const html = await response.text();
+        return html.includes('"isLiveBroadcast":true') || html.includes('LIVE');
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Ошибка проверки статуса:', error);
+      return false;
+    }
+  };
+
+  const updateStreamerStatus = async (streamerId: string, isLive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('streamers')
+        .update({ is_live: isLive })
+        .eq('id', streamerId);
+
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Ошибка обновления статуса:', error);
+    }
+  };
+
+  const refreshStreamersStatus = async () => {
+    setLoading(true);
+    try {
+      const updates = await Promise.all(
+        streamers.map(async (streamer) => {
+          const isLive = await checkStreamerStatus(streamer.stream_url);
+          await updateStreamerStatus(streamer.id, isLive);
+          return { ...streamer, is_live: isLive };
+        })
+      );
+      
+      setStreamers(updates);
+      toast({
+        title: 'Успешно',
+        description: 'Статусы стримеров обновлены',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchStreamers();
   }, []);
@@ -103,6 +167,6 @@ export const useStreamers = () => {
     loading,
     addStreamer,
     removeStreamer,
-    refreshStreamers: fetchStreamers,
+    refreshStreamers: refreshStreamersStatus,
   };
 };

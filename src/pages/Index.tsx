@@ -42,7 +42,7 @@ interface ChatMessage {
 
 const Index: React.FC = () => {
   const { profile, loading, signOut, isAuthenticated, isModerator } = useAuth();
-  const { streamers, addStreamer, removeStreamer, refreshStreamers } = useStreamers();
+  const { streamers, loading: streamersLoading, addStreamer, removeStreamer, refreshStreamers } = useStreamers();
   const { categories, categoryBots, selectedCategory, setSelectedCategory } = useBotCategories();
   
   const [streamerUrl, setStreamerUrl] = useState('');
@@ -440,8 +440,9 @@ const Index: React.FC = () => {
                     size="icon" 
                     onClick={refreshStreamers}
                     className="text-gray-400 hover:text-white"
+                    disabled={streamersLoading}
                   >
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className={`w-4 h-4 ${streamersLoading ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
                 <div className="space-y-3">

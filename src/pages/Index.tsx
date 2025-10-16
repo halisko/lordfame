@@ -25,6 +25,8 @@ import { Slider } from "@/components/ui/slider";
 
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ModeratorPanel } from "@/components/ModeratorPanel";
+import { TwitchPlayer } from "@/components/TwitchPlayer";
+import { TwitchChat } from "@/components/TwitchChat";
 import { useAuth } from "@/hooks/useAuth";
 import { useStreamers } from "@/hooks/useStreamers";
 import { useBotCategories } from "@/hooks/useBotCategories";
@@ -62,6 +64,9 @@ const Index: React.FC = () => {
   const [messageInterval, setMessageInterval] = useState(5);
   const [messageMode, setMessageMode] = useState<'random' | 'order'>('random');
   const [activeTab, setActiveTab] = useState('chat');
+  const [selectedStreamer, setSelectedStreamer] = useState<string | null>(null);
+
+  const activeStreamer = streamers.find(s => s.id === selectedStreamer);
 
   if (!loading && !isAuthenticated) {
     return <Navigate to="/auth" replace />;
@@ -97,7 +102,12 @@ const Index: React.FC = () => {
   };
 
   const connectToStream = (streamerId: string) => {
+    setSelectedStreamer(streamerId);
     setActiveTab('chat');
+  };
+
+  const getTwitchChannel = (streamUrl: string): string => {
+    return streamUrl.split('/').pop() || '';
   };
 
   return (
@@ -174,69 +184,48 @@ const Index: React.FC = () => {
       <div className="container mx-auto px-4 py-4">
         {activeTab === 'chat' && (
             <div className="grid grid-cols-12 gap-4 h-[calc(100vh-120px)]">
-              {/* Left Sidebar - Chat */}
-              <div className="col-span-3">
-                <Card className="h-full bg-white/5 border-white/10 flex flex-col">
-                  <div className="p-4 border-b border-white/10 flex items-center justify-between">
-                    <h3 className="font-semibold">Чат трансляции</h3>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <ScrollArea className="flex-1 p-4">
-                    <div className="space-y-3">
-                      {chatMessages.map((msg) => (
-                        <div key={msg.id} className="text-sm">
-                          <div className="flex items-baseline gap-2">
-                            <span className={msg.username === 'rafa998045' ? 'text-red-400 font-medium' : 'text-blue-400 font-medium'}>
-                              {msg.username}
-                            </span>
-                            <span className="text-xs text-gray-500">{msg.timestamp}</span>
-                          </div>
-                          <p className="text-gray-300 mt-1">{msg.message}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-
-                  <div className="p-4 border-t border-white/10">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Отправить сообщение"
-                        value={messageInput}
-                        onChange={(e) => setMessageInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                        className="bg-white/5 border-white/10"
-                      />
-                      <Button size="icon" onClick={handleSendMessage} className="bg-primary">
-                        <Send className="h-4 w-4" />
+              {/* Left Sidebar - Twitch Chat */}
+              <div className="col-span-3 h-full">
+                {activeStreamer && activeStreamer.stream_url.includes('twitch.tv') ? (
+                  <TwitchChat 
+                    channel={getTwitchChannel(activeStreamer.stream_url)} 
+                    height="100%"
+                  />
+                ) : (
+                  <Card className="h-full bg-white/5 border-white/10 flex flex-col">
+                    <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                      <h3 className="font-semibold">Чат трансляции</h3>
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <Settings className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
-                </Card>
-
-                {/* Predictions Section */}
-                <Card className="mt-4 bg-white/5 border-white/10 p-6">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="w-24 h-24 bg-purple-500/20 rounded-full flex items-center justify-center mb-4">
-                      <div className="text-4xl">💤</div>
+                    
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center text-gray-400">
+                        <p>Выберите стример из списка</p>
+                      </div>
                     </div>
-                    <h4 className="font-semibold mb-2">Прогнозы и голосования</h4>
-                    <p className="text-sm text-gray-400 mb-4">Сейчас нет прогнозов или голосования</p>
-                    <Button variant="outline" className="border-white/20">Обновить</Button>
-                  </div>
-                </Card>
+                  </Card>
+                )}
               </div>
 
               {/* Center - Video Stream */}
               <div className="col-span-6 flex flex-col gap-4">
-                <Card className="bg-black border-white/10 aspect-video flex items-center justify-center">
-                  <div className="text-center">
-                    <Play className="h-16 w-16 mx-auto mb-4 text-gray-600" />
-                    <p className="text-gray-400">Трансляция</p>
-                  </div>
-                </Card>
+                {activeStreamer && activeStreamer.stream_url.includes('twitch.tv') ? (
+                  <Card className="bg-black border-white/10 aspect-video overflow-hidden">
+                    <TwitchPlayer 
+                      channel={getTwitchChannel(activeStreamer.stream_url)} 
+                      height="100%"
+                    />
+                  </Card>
+                ) : (
+                  <Card className="bg-black border-white/10 aspect-video flex items-center justify-center">
+                    <div className="text-center">
+                      <Play className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+                      <p className="text-gray-400">Выберите стример для просмотра</p>
+                    </div>
+                  </Card>
+                )}
 
                 {/* Message Input Section */}
                 <Card className="bg-white/5 border-white/10 p-4">

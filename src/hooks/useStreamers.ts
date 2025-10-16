@@ -96,19 +96,17 @@ export const useStreamers = () => {
 
   const checkStreamerStatus = async (streamUrl: string): Promise<boolean> => {
     try {
-      // Простая проверка для Twitch
       if (streamUrl.includes('twitch.tv')) {
-        const username = streamUrl.split('/').pop() || '';
-        const response = await fetch(`https://www.twitch.tv/${username}`);
-        const html = await response.text();
-        return html.includes('"isLiveBroadcast":true') || html.includes('isLiveBroadcast');
-      }
-      
-      // Простая проверка для YouTube
-      if (streamUrl.includes('youtube.com')) {
-        const response = await fetch(streamUrl);
-        const html = await response.text();
-        return html.includes('"isLiveBroadcast":true') || html.includes('LIVE');
+        const { data, error } = await supabase.functions.invoke('check-twitch-status', {
+          body: { streamUrl },
+        });
+
+        if (error) {
+          console.error('Ошибка проверки статуса Twitch:', error);
+          return false;
+        }
+
+        return data?.isLive || false;
       }
       
       return false;

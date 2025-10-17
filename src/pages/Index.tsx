@@ -27,9 +27,11 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ModeratorPanel } from "@/components/ModeratorPanel";
 import { TwitchPlayer } from "@/components/TwitchPlayer";
 import { TwitchChat } from "@/components/TwitchChat";
+import { ChatAccountsPanel } from "@/components/ChatAccountsPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { useStreamers } from "@/hooks/useStreamers";
 import { useBotCategories } from "@/hooks/useBotCategories";
+import { useTwitchBot } from "@/hooks/useTwitchBot";
 
 import lordLogo from '@/assets/lord-logo.png';
 
@@ -44,6 +46,7 @@ const Index: React.FC = () => {
   const { profile, loading, signOut, isAuthenticated, isModerator } = useAuth();
   const { streamers, loading: streamersLoading, addStreamer, removeStreamer, refreshStreamers } = useStreamers();
   const { categories, categoryBots, selectedCategory, setSelectedCategory } = useBotCategories();
+  const { bots, connectBot, disconnectBot } = useTwitchBot();
   
   const [streamerUrl, setStreamerUrl] = useState('');
   const [streamerName, setStreamerName] = useState('');
@@ -58,7 +61,7 @@ const Index: React.FC = () => {
     { id: '8', username: 'rafa998045', message: 'та ще сонце нерос', timestamp: '19:42' },
   ]);
   
-  const [selectedAccount, setSelectedAccount] = useState('rafa998045');
+  const [selectedBot, setSelectedBot] = useState<any>(null);
   const [messageInput, setMessageInput] = useState('');
   const [botMessage, setBotMessage] = useState('');
   const [messageInterval, setMessageInterval] = useState(5);
@@ -81,10 +84,10 @@ const Index: React.FC = () => {
   }
 
   const handleSendMessage = () => {
-    if (messageInput.trim()) {
+    if (messageInput.trim() && selectedBot) {
       const newMessage: ChatMessage = {
         id: Date.now().toString(),
-        username: selectedAccount,
+        username: selectedBot.nickname,
         message: messageInput,
         timestamp: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
       };
@@ -305,57 +308,14 @@ const Index: React.FC = () => {
 
               {/* Right Sidebar - Account Management */}
               <div className="col-span-3 space-y-4">
-                <Card className="bg-white/5 border-white/10 p-4">
-                  <h4 className="font-semibold mb-4">Аккаунты для сообщений в чат</h4>
-                  
-                  <div className="flex gap-2 mb-4">
-                    <Button variant="default" size="sm" className="flex-1 bg-primary">
-                      Выбранный
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1 border-white/20">
-                      Случайный
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1 border-white/20">
-                      По порядку
-                    </Button>
-                  </div>
-
-                  <div className="relative mb-4">
-                    <Input
-                      placeholder="Поиск аккаунта"
-                      className="bg-white/5 border-white/10 pr-8"
-                    />
-                    <button className="absolute right-2 top-1/2 -translate-y-1/2">
-                      🔍
-                    </button>
-                  </div>
-
-                  <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-                    <SelectTrigger className="bg-white/5 border-white/10 mb-4">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="rafa998045">rafa998045 ✓</SelectItem>
-                      <SelectItem value="hannes19">hannes19</SelectItem>
-                      <SelectItem value="haitako57">haitako57</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <div className="space-y-2">
-                    <Button variant="outline" className="w-full border-white/20 justify-start">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Обновить боты
-                    </Button>
-                    <Button variant="outline" className="w-full border-white/20 justify-start">
-                      <UserMinus className="h-4 w-4 mr-2" />
-                      Отключить аккаунт
-                    </Button>
-                    <Button variant="outline" className="w-full border-white/20 justify-start">
-                      <Heart className="h-4 w-4 mr-2" />
-                      Подписеться
-                    </Button>
-                  </div>
-                </Card>
+                <ChatAccountsPanel
+                  bots={bots}
+                  selectedBot={selectedBot}
+                  onSelectBot={setSelectedBot}
+                  onConnectBot={connectBot}
+                  onDisconnectBot={disconnectBot}
+                  onRefreshBots={refreshStreamers}
+                />
 
                 <Card className="bg-white/5 border-white/10 p-4">
                   <div className="flex items-center justify-between mb-4">

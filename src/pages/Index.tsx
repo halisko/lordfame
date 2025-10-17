@@ -28,6 +28,7 @@ import { ModeratorPanel } from "@/components/ModeratorPanel";
 import { TwitchPlayer } from "@/components/TwitchPlayer";
 import { TwitchChat } from "@/components/TwitchChat";
 import { ChatAccountsPanel } from "@/components/ChatAccountsPanel";
+import { AddBotDialog } from "@/components/AddBotDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useStreamers } from "@/hooks/useStreamers";
 import { useBotCategories } from "@/hooks/useBotCategories";
@@ -45,7 +46,7 @@ interface ChatMessage {
 const Index: React.FC = () => {
   const { profile, loading, signOut, isAuthenticated, isModerator } = useAuth();
   const { streamers, loading: streamersLoading, addStreamer, removeStreamer, refreshStreamers } = useStreamers();
-  const { categories, categoryBots, selectedCategory, setSelectedCategory } = useBotCategories();
+  const { categories, categoryBots, selectedCategory, setSelectedCategory, refreshCategories } = useBotCategories();
   const { bots, connectBot, disconnectBot } = useTwitchBot();
   
   const [streamerUrl, setStreamerUrl] = useState('');
@@ -458,9 +459,9 @@ const Index: React.FC = () => {
         {activeTab === 'templates' && (
             <div className="max-w-6xl mx-auto">
               <Card className="bg-white/5 border-white/10 p-6">
-                <h3 className="text-xl font-semibold mb-4">Категории ботов</h3>
+                <h3 className="text-xl font-semibold mb-4">Шаблоны ботов</h3>
                 <Tabs value={selectedCategory || undefined} onValueChange={setSelectedCategory}>
-                  <TabsList className="bg-white/5 border-white/10 w-full justify-start">
+                  <TabsList className="bg-white/5 border-white/10 w-full justify-start flex-wrap h-auto gap-2 p-2">
                     {categories.map((category) => (
                       <TabsTrigger 
                         key={category.id} 
@@ -475,11 +476,21 @@ const Index: React.FC = () => {
                   {categories.map((category) => (
                     <TabsContent key={category.id} value={category.id} className="mt-6">
                       <div className="space-y-4">
-                        <p className="text-gray-400 mb-4">{category.description}</p>
+                        <div className="flex items-center justify-between mb-4">
+                          <p className="text-gray-400">{category.description}</p>
+                          <AddBotDialog 
+                            categoryId={category.id} 
+                            onBotAdded={refreshCategories}
+                          />
+                        </div>
                         
                         {categoryBots.length === 0 ? (
                           <Card className="bg-white/5 border-white/10 p-8 text-center">
-                            <p className="text-gray-400">Нет ботов в этой категории</p>
+                            <p className="text-gray-400 mb-4">Нет ботов в этой категории</p>
+                            <AddBotDialog 
+                              categoryId={category.id} 
+                              onBotAdded={refreshCategories}
+                            />
                           </Card>
                         ) : (
                           <div className="grid gap-3">

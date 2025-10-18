@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { RefreshCw, UserMinus, Heart, Search, Power, PowerOff } from 'lucide-react';
 import { Bot } from '@/types';
+import { BotCategory } from '@/hooks/useBotCategories';
 
 interface ChatAccountsPanelProps {
   bots: Bot[];
@@ -12,6 +13,10 @@ interface ChatAccountsPanelProps {
   onConnectBot: (botId: string) => void;
   onDisconnectBot: (botId: string) => void;
   onRefreshBots: () => void;
+  categories: BotCategory[];
+  categoryBots: Bot[];
+  selectedCategory: string | null;
+  onSelectCategory: (categoryId: string) => void;
 }
 
 type AccountMode = 'selected' | 'random' | 'order';
@@ -22,19 +27,44 @@ export const ChatAccountsPanel: React.FC<ChatAccountsPanelProps> = ({
   onSelectBot,
   onConnectBot,
   onDisconnectBot,
-  onRefreshBots
+  onRefreshBots,
+  categories,
+  categoryBots,
+  selectedCategory,
+  onSelectCategory
 }) => {
   const [accountMode, setAccountMode] = useState<AccountMode>('selected');
   const [searchQuery, setSearchQuery] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  const filteredBots = bots.filter(bot => 
+  const displayBots = selectedCategory ? categoryBots : bots;
+  const filteredBots = displayBots.filter(bot => 
     bot.nickname.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <Card className="bg-white/5 border-white/10 p-4">
       <h4 className="font-semibold mb-4">Аккаунты для сообщений в чате</h4>
+      
+      {/* Category/Template Selection */}
+      <div className="mb-4">
+        <label className="text-sm text-gray-400 mb-2 block">Выбор шаблона</label>
+        <div className="grid grid-cols-2 gap-2">
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? 'default' : 'outline'}
+              size="sm"
+              className={selectedCategory === category.id 
+                ? 'bg-purple-600 hover:bg-purple-700 text-xs' 
+                : 'border-white/20 text-gray-300 hover:text-white text-xs'}
+              onClick={() => onSelectCategory(category.id)}
+            >
+              {category.name}
+            </Button>
+          ))}
+        </div>
+      </div>
       
       {/* Mode Selection Buttons */}
       <div className="flex gap-2 mb-4">

@@ -316,6 +316,10 @@ const Index: React.FC = () => {
                   onConnectBot={connectBot}
                   onDisconnectBot={disconnectBot}
                   onRefreshBots={refreshStreamers}
+                  categories={categories}
+                  categoryBots={categoryBots}
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={setSelectedCategory}
                 />
 
                 <Card className="bg-white/5 border-white/10 p-4">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Bot as BotType } from '@/types';
 
 export interface BotCategory {
   id: string;
@@ -9,17 +10,9 @@ export interface BotCategory {
   created_at: string;
 }
 
-export interface Bot {
-  id: string;
+export interface BotFromDB extends BotType {
   user_id: string;
-  nickname: string;
-  token: string;
-  platform: string;
-  connected: boolean;
-  status: string;
   category_id: string | null;
-  proxy: string | null;
-  country: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -27,7 +20,7 @@ export interface Bot {
 export const useBotCategories = () => {
   const [categories, setCategories] = useState<BotCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [categoryBots, setCategoryBots] = useState<Bot[]>([]);
+  const [categoryBots, setCategoryBots] = useState<BotType[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -67,7 +60,20 @@ export const useBotCategories = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCategoryBots(data || []);
+      
+      // Map database bots to Bot type
+      const mappedBots: BotType[] = (data || []).map(bot => ({
+        id: bot.id,
+        nickname: bot.nickname,
+        token: bot.token,
+        platform: bot.platform as BotType['platform'],
+        connected: bot.connected,
+        status: bot.status as BotType['status'],
+        proxy: bot.proxy || undefined,
+        country: bot.country || undefined,
+      }));
+      
+      setCategoryBots(mappedBots);
     } catch (error: any) {
       toast({
         title: 'Ошибка',

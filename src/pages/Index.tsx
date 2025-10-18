@@ -477,7 +477,7 @@ const Index: React.FC = () => {
                     <TabsContent key={category.id} value={category.id} className="mt-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between mb-4">
-                          <p className="text-gray-400">{category.description}</p>
+                          <h4 className="text-lg font-medium">{category.name}</h4>
                           <AddBotDialog 
                             categoryId={category.id} 
                             onBotAdded={refreshCategories}
@@ -486,11 +486,7 @@ const Index: React.FC = () => {
                         
                         {categoryBots.length === 0 ? (
                           <Card className="bg-white/5 border-white/10 p-8 text-center">
-                            <p className="text-gray-400 mb-4">Нет ботов в этой категории</p>
-                            <AddBotDialog 
-                              categoryId={category.id} 
-                              onBotAdded={refreshCategories}
-                            />
+                            <p className="text-gray-400">Нет ботов в этой категории</p>
                           </Card>
                         ) : (
                           <div className="grid gap-3">

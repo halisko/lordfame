@@ -39,7 +39,14 @@ export const useBotCategories = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setCategories(data || []);
+      
+      // Сортируем в правильном порядке
+      const sortedData = (data || []).sort((a, b) => {
+        const order = ['Мульти боты', 'Боты для GTA 5', 'Боты для CS 2', 'Боты для Dota 2'];
+        return order.indexOf(a.name) - order.indexOf(b.name);
+      });
+      
+      setCategories(sortedData);
     } catch (error: any) {
       toast({
         title: 'Ошибка',
@@ -74,6 +81,33 @@ export const useBotCategories = () => {
     fetchCategories();
   }, []);
 
+  const deleteBot = async (botId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bots')
+        .delete()
+        .eq('id', botId);
+
+      if (error) throw error;
+      
+      toast({
+        title: 'Успешно',
+        description: 'Бот удален',
+      });
+      
+      // Обновляем список ботов
+      if (selectedCategory) {
+        fetchBotsByCategory(selectedCategory);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   useEffect(() => {
     if (selectedCategory) {
       fetchBotsByCategory(selectedCategory);
@@ -89,5 +123,6 @@ export const useBotCategories = () => {
     setSelectedCategory,
     loading,
     refreshCategories: fetchCategories,
+    deleteBot,
   };
 };

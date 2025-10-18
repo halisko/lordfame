@@ -46,7 +46,7 @@ interface ChatMessage {
 const Index: React.FC = () => {
   const { profile, loading, signOut, isAuthenticated, isModerator } = useAuth();
   const { streamers, loading: streamersLoading, addStreamer, removeStreamer, refreshStreamers } = useStreamers();
-  const { categories, categoryBots, selectedCategory, setSelectedCategory, refreshCategories } = useBotCategories();
+  const { categories, categoryBots, selectedCategory, setSelectedCategory, refreshCategories, deleteBot } = useBotCategories();
   const { bots, connectBot, disconnectBot } = useTwitchBot();
   
   const [streamerUrl, setStreamerUrl] = useState('');
@@ -514,8 +514,18 @@ const Index: React.FC = () => {
                                       )}
                                     </div>
                                   </div>
-                                  <div className="text-xs text-gray-500">
-                                    Cookie токен: {bot.token.substring(0, 20)}...
+                                  <div className="flex items-center gap-4">
+                                    <div className="text-xs text-gray-500">
+                                      Cookie токен: {bot.token.substring(0, 20)}...
+                                    </div>
+                                    <Button 
+                                      size="sm" 
+                                      variant="ghost" 
+                                      onClick={() => deleteBot(bot.id)}
+                                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
                                   </div>
                                 </div>
                               </Card>

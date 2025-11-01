@@ -48,6 +48,8 @@ export const useAuth = () => {
     // Fetch user profile with role from user_roles table
     const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
       try {
+        console.log('[useAuth] Fetching profile for user:', userId);
+        
         // Fetch profile data
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -56,9 +58,11 @@ export const useAuth = () => {
           .single();
         
         if (profileError) {
-          console.error('Error fetching profile:', profileError);
+          console.error('[useAuth] Error fetching profile:', profileError);
           return null;
         }
+
+        console.log('[useAuth] Profile data:', profileData);
 
         // Fetch user's highest role from user_roles table
         const { data: rolesData, error: rolesError } = await supabase
@@ -67,10 +71,12 @@ export const useAuth = () => {
           .eq('user_id', userId);
         
         if (rolesError) {
-          console.error('Error fetching roles:', rolesError);
+          console.error('[useAuth] Error fetching roles:', rolesError);
           // Default to 'user' role if no roles found
           return { ...profileData, role: 'user' as const };
         }
+
+        console.log('[useAuth] Roles data:', rolesData);
 
         // Determine highest role based on hierarchy
         type RoleType = 'chief' | 'moderator' | 'operator' | 'user' | 'worker';
@@ -93,9 +99,11 @@ export const useAuth = () => {
           }
         });
 
+        console.log('[useAuth] Final role:', highestRole);
+
         return { ...profileData, role: highestRole };
       } catch (error) {
-        console.error('Error in profile fetch:', error);
+        console.error('[useAuth] Error in profile fetch:', error);
         return null;
       }
     };
@@ -103,31 +111,41 @@ export const useAuth = () => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('[useAuth] Auth state changed:', event, session?.user?.id);
+        try {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            const profileData = await fetchUserProfile(session.user.id);
+            setProfile(profileData);
+          } else {
+            setProfile(null);
+          }
+        } catch (error) {
+          console.error('[useAuth] Error in auth state change handler:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('[useAuth] Initial session check:', session?.user?.id);
+      try {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           const profileData = await fetchUserProfile(session.user.id);
           setProfile(profileData);
-        } else {
-          setProfile(null);
         }
-        
+      } catch (error) {
+        console.error('[useAuth] Error in initial session check:', error);
+      } finally {
         setLoading(false);
       }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const profileData = await fetchUserProfile(session.user.id);
-        setProfile(profileData);
-      }
-      
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

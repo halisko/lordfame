@@ -45,6 +45,61 @@ export const useAuth = () => {
   };
 
   useEffect(() => {
+    // Fetch user profile with role from user_roles table
+    const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+      try {
+        // Fetch profile data
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+        
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          return null;
+        }
+
+        // Fetch user's highest role from user_roles table
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId);
+        
+        if (rolesError) {
+          console.error('Error fetching roles:', rolesError);
+          // Default to 'user' role if no roles found
+          return { ...profileData, role: 'user' as const };
+        }
+
+        // Determine highest role based on hierarchy
+        type RoleType = 'chief' | 'moderator' | 'operator' | 'user' | 'worker';
+        const roleHierarchy: Record<RoleType, number> = { 
+          chief: 4, 
+          moderator: 3, 
+          worker: 3, 
+          operator: 2, 
+          user: 1 
+        };
+        let highestRole: RoleType = 'user';
+        let highestLevel = 0;
+
+        rolesData?.forEach((roleRecord) => {
+          const role = roleRecord.role as RoleType;
+          const level = roleHierarchy[role] || 0;
+          if (level > highestLevel) {
+            highestLevel = level;
+            highestRole = role;
+          }
+        });
+
+        return { ...profileData, role: highestRole };
+      } catch (error) {
+        console.error('Error in profile fetch:', error);
+        return null;
+      }
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -52,24 +107,8 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile
-          setTimeout(async () => {
-            try {
-              const { data: profileData, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-              
-              if (error) {
-                console.error('Error fetching profile:', error);
-              } else {
-                setProfile(profileData);
-              }
-            } catch (error) {
-              console.error('Error in profile fetch:', error);
-            }
-          }, 0);
+          const profileData = await fetchUserProfile(session.user.id);
+          setProfile(profileData);
         } else {
           setProfile(null);
         }
@@ -79,32 +118,16 @@ export const useAuth = () => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        setTimeout(async () => {
-          try {
-            const { data: profileData, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (error) {
-              console.error('Error fetching profile:', error);
-            } else {
-              setProfile(profileData);
-            }
-          } catch (error) {
-            console.error('Error in profile fetch:', error);
-          }
-          setLoading(false);
-        }, 0);
-      } else {
-        setLoading(false);
+        const profileData = await fetchUserProfile(session.user.id);
+        setProfile(profileData);
       }
+      
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
